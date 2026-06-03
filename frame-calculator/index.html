@@ -1,0 +1,2536 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>지붕이 샤시 계산기</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #64748b;
+      --line: #dbe3ed;
+      --accent: #0f766e;
+      --accent-2: #b45309;
+      --good: #047857;
+      --warn: #b45309;
+      --bad: #b91c1c;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 18px;
+      color: #e5f3f0;
+      background: #102a2a;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      color: #a7c8c3;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button,
+    .ghost {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 11px 12px;
+      color: #dbeafe;
+      background: rgba(255, 255, 255, 0.04);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav button.active {
+      color: #082f2e;
+      background: #ccfbf1;
+      border-color: #99f6e4;
+      font-weight: 700;
+    }
+
+    .aside-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .aside-actions .ghost {
+      text-align: center;
+      padding: 9px 8px;
+    }
+
+    main {
+      padding: 28px;
+    }
+
+    .top {
+      max-width: 1180px;
+      margin: 0 auto 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .unit-note {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      min-width: 210px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .workspace {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .module {
+      display: none;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(360px, 1.08fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .module.active {
+      display: grid;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #fbfdff;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-head span {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .form {
+      padding: 16px 18px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.wide {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 11px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 116px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .results {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-result {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: #f8fafc;
+      min-height: 86px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .metric strong {
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .metric.good strong {
+      color: var(--good);
+    }
+
+    .metric.warn strong {
+      color: var(--warn);
+    }
+
+    .metric.caution strong {
+      color: #ea580c;
+    }
+
+    .metric.bad strong {
+      color: var(--bad);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 540px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    th {
+      color: #334155;
+      background: #f8fafc;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .explain {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .canvas-panel {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      display: block;
+    }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.45;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .status.warn {
+      color: #92400e;
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .status.bad {
+      color: #991b1b;
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .input-state {
+      grid-column: 1 / -1;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #475569;
+      background: #f8fafc;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .input-state.auto {
+      color: #065f46;
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+    }
+
+    .inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .action-btn {
+      border: 1px solid #99f6e4;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #0f3f3c;
+      background: #ccfbf1;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .action-btn.secondary {
+      color: #334155;
+      background: #fff;
+      border-color: #cbd5e1;
+    }
+
+    .compact-input {
+      min-width: 92px;
+      padding: 8px;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .top,
+      .module {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        padding: 18px;
+      }
+
+      .form,
+      .hero-result,
+      .nav {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <strong>지붕이 샤시 계산기</strong>
+        <span>차량 제원, 하중이동, 조향, 현가 기초 계산을 한 화면에서 빠르게 확인합니다.</span>
+      </div>
+      <nav class="nav" aria-label="계산 모듈">
+        <button class="active" type="button" data-tab="cg">CG 계산</button>
+        <button type="button" data-tab="vehicle">차량 제원</button>
+        <button type="button" data-tab="load">하중이동</button>
+        <button type="button" data-tab="steering">조향</button>
+        <button type="button" data-tab="suspension">현가</button>
+        <button type="button" data-tab="hardpoint">하드포인트 현가</button>
+        <button type="button" data-tab="anti">Anti Geometry</button>
+        <button type="button" data-tab="kinematics3d">3D Kinematics</button>
+      </nav>
+      <div class="aside-actions">
+        <button class="ghost" type="button" id="saveBtn">저장</button>
+        <button class="ghost" type="button" id="resetBtn">리셋</button>
+      </div>
+    </aside>
+
+    <main>
+      <section class="top">
+        <div>
+          <h1>프레임 설계용 차량 계산기</h1>
+          <p class="lead">초기 패키징 단계에서 프레임 하드포인트와 차량 제원을 바꿔 보며 정적 하중, 동적 하중이동, Ackermann 조향, 기본 현가 지오메트리 값을 빠르게 비교합니다.</p>
+        </div>
+        <div class="unit-note">
+          원점 O는 전륜 차축 중심의 지면점입니다. +X는 후륜 방향, +Y는 차량 좌측, +Z는 상방입니다.
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="module active" data-module="cg">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>부품별 질량 / 좌표</span>
+            </div>
+            <div class="results">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>부품</th><th>질량 kg</th><th>X mm</th><th>Y mm</th><th>Z mm</th><th>삭제</th></tr>
+                  </thead>
+                  <tbody id="cgPartRows">
+                    <tr>
+                      <td><input class="compact-input cg-part-name" value="모터"></td>
+                      <td><input class="compact-input cg-part-mass" type="number" value="15" step="0.1"></td>
+                      <td><input class="compact-input cg-part-x" type="number" value="1200" step="1"></td>
+                      <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
+                      <td><input class="compact-input cg-part-z" type="number" value="250" step="1"></td>
+                      <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
+                    </tr>
+                    <tr>
+                      <td><input class="compact-input cg-part-name" value="배터리"></td>
+                      <td><input class="compact-input cg-part-mass" type="number" value="20" step="0.1"></td>
+                      <td><input class="compact-input cg-part-x" type="number" value="900" step="1"></td>
+                      <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
+                      <td><input class="compact-input cg-part-z" type="number" value="180" step="1"></td>
+                      <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
+                    </tr>
+                    <tr>
+                      <td><input class="compact-input cg-part-name" value="드라이버"></td>
+                      <td><input class="compact-input cg-part-mass" type="number" value="75" step="0.1"></td>
+                      <td><input class="compact-input cg-part-x" type="number" value="800" step="1"></td>
+                      <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
+                      <td><input class="compact-input cg-part-z" type="number" value="500" step="1"></td>
+                      <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="inline-actions">
+                <button class="action-btn" id="addCgPartBtn" type="button">부품 추가</button>
+                <button class="action-btn secondary" id="applyCgBtn" type="button">차량 제원에 반영</button>
+              </div>
+              <p class="explain">원점 O는 전륜 차축 중심의 지면점입니다. +X는 후륜 방향, +Y는 차량 좌측, +Z는 상방입니다. 부품별 질량중심을 넣으면 전체 차량의 1차 CG를 계산합니다.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>전체 질량중심</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>총 질량</span>
+                  <strong id="cgTotalMass">-</strong>
+                  <span>부품 질량 합계</span>
+                </div>
+                <div class="metric">
+                  <span>전체 CG</span>
+                  <strong id="cgVector">-</strong>
+                  <span>X / Y / Z</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>항목</th><th>값</th><th>차량 제원 연결</th></tr>
+                  </thead>
+                  <tbody id="cgResultTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="cgCanvas" width="900" height="506" aria-label="CG 패키징 시각화"></canvas>
+              </div>
+              <p class="explain">부품 누락이 있으면 CG가 크게 틀어집니다. 프레임, 휠/타이어, 서스펜션 암, 연료/배터리, 드라이버, 카울까지 설계 단계별로 넣어가며 업데이트하는 용도로 쓰면 좋습니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="vehicle">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>질량 / CG / 패키징</span>
+            </div>
+            <div class="form">
+              <div class="input-state" id="vehicleInputState">수동 입력 상태입니다.</div>
+              <div class="field">
+                <label for="mass">차량 질량 kg</label>
+                <input id="mass" data-key="mass" type="number" value="250" step="1">
+              </div>
+              <div class="field">
+                <label for="wheelbase">휠베이스 mm</label>
+                <input id="wheelbase" data-key="wheelbase" type="number" value="1600" step="1">
+              </div>
+              <div class="field">
+                <label for="frontTrack">전륜 트랙 mm</label>
+                <input id="frontTrack" data-key="frontTrack" type="number" value="1240" step="1">
+              </div>
+              <div class="field">
+                <label for="rearTrack">후륜 트랙 mm</label>
+                <input id="rearTrack" data-key="rearTrack" type="number" value="1200" step="1">
+              </div>
+              <div class="field">
+                <label for="cgHeight">CG 높이 mm</label>
+                <input id="cgHeight" data-key="cgHeight" type="number" value="420" step="1">
+              </div>
+              <div class="field">
+                <label for="cgX">CG X mm, 전륜축에서 후륜 방향</label>
+                <input id="cgX" data-key="cgX" type="number" value="720" step="1">
+              </div>
+              <div class="field wide">
+                <label for="cgY">CG Y mm, 좌측 +</label>
+                <input id="cgY" data-key="cgY" type="number" value="0" step="1">
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>전후하중 / 좌우하중</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>전륜 정적 하중</span>
+                  <strong id="frontLoad">-</strong>
+                  <span id="frontPct">-</span>
+                </div>
+                <div class="metric">
+                  <span>후륜 정적 하중</span>
+                  <strong id="rearLoad">-</strong>
+                  <span id="rearPct">-</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>바퀴</th><th>하중 N</th><th>질량 환산 kg</th><th>비율</th></tr>
+                  </thead>
+                  <tbody id="cornerTable"></tbody>
+                </table>
+              </div>
+              <p class="explain">전후 하중은 CG X 위치로, 좌우 하중은 CG Y 오프셋과 평균 트랙으로 1차 분배합니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="load">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>가속도 / 감속도 / 횡가속도</span>
+            </div>
+            <div class="form">
+              <div class="field">
+                <label for="accelG">가속도 g</label>
+                <input id="accelG" data-key="accelG" type="number" value="0.45" step="0.01">
+              </div>
+              <div class="field">
+                <label for="brakeG">감속도 g</label>
+                <input id="brakeG" data-key="brakeG" type="number" value="0.85" step="0.01">
+              </div>
+              <div class="field">
+                <label for="latG">횡가속도 g</label>
+                <input id="latG" data-key="latG" type="number" value="0.9" step="0.01">
+              </div>
+              <div class="field">
+                <label for="rollFrontShare">전륜 롤강성 배분 %</label>
+                <input id="rollFrontShare" data-key="rollFrontShare" type="number" value="55" step="1">
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>전후 / 좌우 하중이동</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>제동 시 하중이동</span>
+                  <strong id="brakeTransfer">-</strong>
+                  <span>후륜에서 전륜으로 이동</span>
+                </div>
+                <div class="metric">
+                  <span>가속 시 하중이동</span>
+                  <strong id="accelTransfer">-</strong>
+                  <span>전륜에서 후륜으로 이동</span>
+                </div>
+                <div class="metric" id="lltdMetric">
+                  <span>전륜 LLTD</span>
+                  <strong id="frontLltd">-</strong>
+                  <span id="rearLltd">-</span>
+                </div>
+                <div class="metric">
+                  <span>예상 성향</span>
+                  <strong id="handlingBias">-</strong>
+                  <span>롤강성 배분 기반 1차 판단</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>상황</th><th>전륜 N</th><th>후륜 N</th><th>좌측 N</th><th>우측 N</th></tr>
+                  </thead>
+                  <tbody id="loadTable"></tbody>
+                </table>
+              </div>
+              <p class="explain">종방향 하중이동은 m*a*h/L, 횡방향 하중이동은 m*ay*h/t를 사용합니다. 현재 표의 좌우 증감은 좌측이 바깥쪽인 선회 예시이며, 실제 방향은 선회 방향에 따라 반대가 됩니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="steering">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>랙 / 타이로드 / 목표 회전</span>
+            </div>
+            <div class="form">
+              <div class="field">
+                <label for="turnRadius">목표 회전반경 mm</label>
+                <input id="turnRadius" data-key="turnRadius" type="number" value="8000" step="10">
+              </div>
+              <div class="field">
+                <label for="rackTravel">랙 이동량 mm</label>
+                <input id="rackTravel" data-key="rackTravel" type="number" value="35" step="0.1">
+              </div>
+              <div class="field">
+                <label for="rackY">랙 위치 Y mm</label>
+                <input id="rackY" data-key="rackY" type="number" value="0" step="1">
+              </div>
+              <div class="field">
+                <label for="tieRod">타이로드 길이 mm</label>
+                <input id="tieRod" data-key="tieRod" type="number" value="330" step="1">
+              </div>
+              <div class="field">
+                <label for="innerMeasured">실측/추정 내륜각 도</label>
+                <input id="innerMeasured" data-key="innerMeasured" type="number" value="13.5" step="0.1">
+              </div>
+              <div class="field">
+                <label for="outerMeasured">실측/추정 외륜각 도</label>
+                <input id="outerMeasured" data-key="outerMeasured" type="number" value="11.5" step="0.1">
+              </div>
+              <div class="field">
+                <label for="steerRackX">랙 이너 X mm</label>
+                <input id="steerRackX" data-key="steerRackX" type="number" value="80" step="1">
+              </div>
+              <div class="field">
+                <label for="steerInnerY">이너 타이로드 Y mm</label>
+                <input id="steerInnerY" data-key="steerInnerY" type="number" value="310" step="1">
+              </div>
+              <div class="field">
+                <label for="steerArmX">스티어암 바깥점 X mm</label>
+                <input id="steerArmX" data-key="steerArmX" type="number" value="70" step="1">
+              </div>
+              <div class="field">
+                <label for="steerArmY">스티어암 바깥점 Y mm</label>
+                <input id="steerArmY" data-key="steerArmY" type="number" value="-50" step="1">
+              </div>
+              <div class="field">
+                <label for="steerSweepMin">랙 최소 이동 mm</label>
+                <input id="steerSweepMin" data-key="steerSweepMin" type="number" value="-40" step="5">
+              </div>
+              <div class="field">
+                <label for="steerSweepMax">랙 최대 이동 mm</label>
+                <input id="steerSweepMax" data-key="steerSweepMax" type="number" value="40" step="5">
+              </div>
+              <div class="field wide">
+                <label for="steerSweepStep">랙 스윕 간격 mm</label>
+                <input id="steerSweepStep" data-key="steerSweepStep" type="number" value="10" step="5">
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>내륜각 / 외륜각 / Ackermann</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>이상 내륜각 / 외륜각</span>
+                  <strong id="idealSteer">-</strong>
+                  <span>목표 반경 기준</span>
+                </div>
+                <div class="metric" id="ackMetric">
+                  <span>Ackermann 비율</span>
+                  <strong id="ackermann">-</strong>
+                  <span>실측각 기준</span>
+                </div>
+                <div class="metric">
+                  <span>최대 내륜각</span>
+                  <strong id="steerMaxInner">-</strong>
+                  <span>랙 스윕 기준</span>
+                </div>
+                <div class="metric">
+                  <span>최대 Ackermann</span>
+                  <strong id="steerMaxAck">-</strong>
+                  <span>좌회전 방향 기준</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>항목</th><th>값</th><th>비고</th></tr>
+                  </thead>
+                  <tbody id="steeringTable"></tbody>
+                </table>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>랙 이동</th><th>좌륜각</th><th>우륜각</th><th>내륜각</th><th>외륜각</th><th>Ackermann</th></tr>
+                  </thead>
+                  <tbody id="steeringSweepTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="steeringCurveCanvas" width="900" height="506" aria-label="랙 트래블 조향각 그래프"></canvas>
+              </div>
+              <div class="status warn">V1.8 조향 해석은 Top View 2D 모델입니다. 킹핀 경사, 캐스터, 범프, 스크럽, 실제 너클 3D 자세는 아직 반영하지 않습니다.</div>
+              <p class="explain">Ackermann %는 cot(외륜각)-cot(내륜각)을 이상 Ackermann 값과 비교합니다. 실제 내외륜각은 스티어링 암과 너클 피벗 좌표가 필요하므로, 랙 이동량/타이로드 길이는 단순 추정 보조값입니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="suspension">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>하드포인트 좌표</span>
+            </div>
+            <div class="form">
+              <div class="field">
+                <label for="upperInY">어퍼암 차체측 Y mm</label>
+                <input id="upperInY" data-key="upperInY" type="number" value="260" step="1">
+              </div>
+              <div class="field">
+                <label for="upperInZ">어퍼암 차체측 Z mm</label>
+                <input id="upperInZ" data-key="upperInZ" type="number" value="430" step="1">
+              </div>
+              <div class="field">
+                <label for="upperOutY">어퍼암 휠측 Y mm</label>
+                <input id="upperOutY" data-key="upperOutY" type="number" value="575" step="1">
+              </div>
+              <div class="field">
+                <label for="upperOutZ">어퍼암 휠측 Z mm</label>
+                <input id="upperOutZ" data-key="upperOutZ" type="number" value="390" step="1">
+              </div>
+              <div class="field">
+                <label for="lowerInY">로어암 차체측 Y mm</label>
+                <input id="lowerInY" data-key="lowerInY" type="number" value="240" step="1">
+              </div>
+              <div class="field">
+                <label for="lowerInZ">로어암 차체측 Z mm</label>
+                <input id="lowerInZ" data-key="lowerInZ" type="number" value="185" step="1">
+              </div>
+              <div class="field">
+                <label for="lowerOutY">로어암 휠측 Y mm</label>
+                <input id="lowerOutY" data-key="lowerOutY" type="number" value="585" step="1">
+              </div>
+              <div class="field">
+                <label for="lowerOutZ">로어암 휠측 Z mm</label>
+                <input id="lowerOutZ" data-key="lowerOutZ" type="number" value="205" step="1">
+              </div>
+              <div class="field">
+                <label for="wheelCenterY">휠센터 Y mm</label>
+                <input id="wheelCenterY" data-key="wheelCenterY" type="number" value="620" step="1">
+              </div>
+              <div class="field">
+                <label for="wheelCenterZ">휠센터 Z mm</label>
+                <input id="wheelCenterZ" data-key="wheelCenterZ" type="number" value="250" step="1">
+              </div>
+              <div class="field">
+                <label for="springWheel">휠 스트로크 mm</label>
+                <input id="springWheel" data-key="springWheel" type="number" value="80" step="1">
+              </div>
+              <div class="field">
+                <label for="springShock">댐퍼 스트로크 mm</label>
+                <input id="springShock" data-key="springShock" type="number" value="55" step="1">
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>캠버 / 롤센터 / 모션비</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>정적 캠버</span>
+                  <strong id="camber">-</strong>
+                  <span>정면 Y-Z 평면 기준</span>
+                </div>
+                <div class="metric">
+                  <span>롤센터 높이</span>
+                  <strong id="rollCenter">-</strong>
+                  <span>차량 중심선 교점</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>항목</th><th>값</th><th>비고</th></tr>
+                  </thead>
+                  <tbody id="suspTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="suspCanvas" width="900" height="506" aria-label="현가 지오메트리 시각화"></canvas>
+              </div>
+              <div class="status" id="rollCenterEval">롤센터 평가가 여기에 표시됩니다.</div>
+              <p class="explain">2D 정면도 기준 간이 계산입니다. 실제 설계 검토에서는 전후방 좌표, 킹핀축, 타이어 접지점, 범프/리바운드 sweep을 함께 확인해야 합니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="hardpoint">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>3D 하드포인트 / 범프 스윕</span>
+            </div>
+            <div class="form">
+              <div class="field"><label for="hpUFIx">어퍼 전방 차체 X</label><input id="hpUFIx" data-key="hpUFIx" type="number" value="-280" step="1"></div>
+              <div class="field"><label for="hpUFIy">어퍼 전방 차체 Y</label><input id="hpUFIy" data-key="hpUFIy" type="number" value="255" step="1"></div>
+              <div class="field"><label for="hpUFIz">어퍼 전방 차체 Z</label><input id="hpUFIz" data-key="hpUFIz" type="number" value="430" step="1"></div>
+              <div class="field"><label for="hpURIx">어퍼 후방 차체 X</label><input id="hpURIx" data-key="hpURIx" type="number" value="280" step="1"></div>
+              <div class="field"><label for="hpURIy">어퍼 후방 차체 Y</label><input id="hpURIy" data-key="hpURIy" type="number" value="265" step="1"></div>
+              <div class="field"><label for="hpURIz">어퍼 후방 차체 Z</label><input id="hpURIz" data-key="hpURIz" type="number" value="430" step="1"></div>
+              <div class="field"><label for="hpUBJx">어퍼 볼조인트 X</label><input id="hpUBJx" data-key="hpUBJx" type="number" value="20" step="1"></div>
+              <div class="field"><label for="hpUBJy">어퍼 볼조인트 Y</label><input id="hpUBJy" data-key="hpUBJy" type="number" value="575" step="1"></div>
+              <div class="field"><label for="hpUBJz">어퍼 볼조인트 Z</label><input id="hpUBJz" data-key="hpUBJz" type="number" value="390" step="1"></div>
+
+              <div class="field"><label for="hpLFIx">로어 전방 차체 X</label><input id="hpLFIx" data-key="hpLFIx" type="number" value="-310" step="1"></div>
+              <div class="field"><label for="hpLFIy">로어 전방 차체 Y</label><input id="hpLFIy" data-key="hpLFIy" type="number" value="235" step="1"></div>
+              <div class="field"><label for="hpLFIz">로어 전방 차체 Z</label><input id="hpLFIz" data-key="hpLFIz" type="number" value="185" step="1"></div>
+              <div class="field"><label for="hpLRIx">로어 후방 차체 X</label><input id="hpLRIx" data-key="hpLRIx" type="number" value="310" step="1"></div>
+              <div class="field"><label for="hpLRIy">로어 후방 차체 Y</label><input id="hpLRIy" data-key="hpLRIy" type="number" value="245" step="1"></div>
+              <div class="field"><label for="hpLRIz">로어 후방 차체 Z</label><input id="hpLRIz" data-key="hpLRIz" type="number" value="185" step="1"></div>
+              <div class="field"><label for="hpLBJx">로어 볼조인트 X</label><input id="hpLBJx" data-key="hpLBJx" type="number" value="0" step="1"></div>
+              <div class="field"><label for="hpLBJy">로어 볼조인트 Y</label><input id="hpLBJy" data-key="hpLBJy" type="number" value="585" step="1"></div>
+              <div class="field"><label for="hpLBJz">로어 볼조인트 Z</label><input id="hpLBJz" data-key="hpLBJz" type="number" value="205" step="1"></div>
+
+              <div class="field"><label for="hpWCx">휠센터 X</label><input id="hpWCx" data-key="hpWCx" type="number" value="0" step="1"></div>
+              <div class="field"><label for="hpWCy">휠센터 Y</label><input id="hpWCy" data-key="hpWCy" type="number" value="620" step="1"></div>
+              <div class="field"><label for="hpWCz">휠센터 Z</label><input id="hpWCz" data-key="hpWCz" type="number" value="250" step="1"></div>
+              <div class="field"><label for="hpShockBodyx">댐퍼 차체측 X</label><input id="hpShockBodyx" data-key="hpShockBodyx" type="number" value="140" step="1"></div>
+              <div class="field"><label for="hpShockBodyy">댐퍼 차체측 Y</label><input id="hpShockBodyy" data-key="hpShockBodyy" type="number" value="310" step="1"></div>
+              <div class="field"><label for="hpShockBodyz">댐퍼 차체측 Z</label><input id="hpShockBodyz" data-key="hpShockBodyz" type="number" value="500" step="1"></div>
+              <div class="field"><label for="hpShockWheelx">댐퍼 휠측 X</label><input id="hpShockWheelx" data-key="hpShockWheelx" type="number" value="80" step="1"></div>
+              <div class="field"><label for="hpShockWheely">댐퍼 휠측 Y</label><input id="hpShockWheely" data-key="hpShockWheely" type="number" value="430" step="1"></div>
+              <div class="field"><label for="hpShockWheelz">댐퍼 휠측 Z</label><input id="hpShockWheelz" data-key="hpShockWheelz" type="number" value="270" step="1"></div>
+
+              <div class="field"><label for="hpItrx">타이로드 안쪽 X</label><input id="hpItrx" data-key="hpItrx" type="number" value="120" step="1"></div>
+              <div class="field"><label for="hpItry">타이로드 안쪽 Y</label><input id="hpItry" data-key="hpItry" type="number" value="310" step="1"></div>
+              <div class="field"><label for="hpItrz">타이로드 안쪽 Z</label><input id="hpItrz" data-key="hpItrz" type="number" value="245" step="1"></div>
+              <div class="field"><label for="hpOtrx">타이로드 바깥쪽 X</label><input id="hpOtrx" data-key="hpOtrx" type="number" value="70" step="1"></div>
+              <div class="field"><label for="hpOtry">타이로드 바깥쪽 Y</label><input id="hpOtry" data-key="hpOtry" type="number" value="570" step="1"></div>
+              <div class="field"><label for="hpOtrz">타이로드 바깥쪽 Z</label><input id="hpOtrz" data-key="hpOtrz" type="number" value="245" step="1"></div>
+
+              <div class="field"><label for="hpSpringRate">스프링 레이트 lb/in</label><input id="hpSpringRate" data-key="hpSpringRate" type="number" value="250" step="5"></div>
+              <div class="field"><label for="hpTireRate">타이어 수직강성 lb/in</label><input id="hpTireRate" data-key="hpTireRate" type="number" value="900" step="10"></div>
+              <div class="field"><label for="hpTravelMin">리바운드 mm</label><input id="hpTravelMin" data-key="hpTravelMin" type="number" value="-80" step="5"></div>
+              <div class="field"><label for="hpTravelMax">범프 mm</label><input id="hpTravelMax" data-key="hpTravelMax" type="number" value="80" step="5"></div>
+              <div class="field"><label for="hpTravelStep">간격 mm</label><input id="hpTravelStep" data-key="hpTravelStep" type="number" value="20" step="5"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>캠버 게인 / 롤센터 이동 / 트랙 변화</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>캠버 게인</span>
+                  <strong id="hpCamberGain">-</strong>
+                  <span>정적 대비 범프 방향 기울기</span>
+                </div>
+                <div class="metric">
+                  <span>롤센터 변화</span>
+                  <strong id="hpRcRange">-</strong>
+                  <span>스윕 구간 내 높이 범위</span>
+                </div>
+                <div class="metric">
+                  <span>범프스티어</span>
+                  <strong id="hpBumpSteer">-</strong>
+                  <span>범프/리바운드 최대 변화</span>
+                </div>
+                <div class="metric">
+                  <span>최대 트랙 변화</span>
+                  <strong id="hpTrackRange">-</strong>
+                  <span>정적 대비 Y 변화</span>
+                </div>
+                <div class="metric">
+                  <span>정적 휠레이트</span>
+                  <strong id="hpWheelRate">-</strong>
+                  <span>Spring Rate × MR²</span>
+                </div>
+                <div class="metric">
+                  <span>정적 라이드레이트</span>
+                  <strong id="hpRideRate">-</strong>
+                  <span>타이어 강성 포함</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>휠 트래블</th><th>캠버</th><th>롤센터 Z</th><th>트랙 변화</th><th>토 변화</th><th>모션비</th><th>휠레이트</th><th>라이드레이트</th></tr>
+                  </thead>
+                  <tbody id="hpSweepTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="hpCurveCanvas" width="900" height="506" aria-label="하드포인트 스윕 곡선"></canvas>
+                <canvas id="hpToeCanvas" width="900" height="320" aria-label="Toe vs Wheel Travel 그래프"></canvas>
+              </div>
+              <div class="status warn">현재 버전은 3D 좌표를 입력받지만 정면 Y-Z 투영 기반 1차 스윕입니다. 실제 3D 기구학, 토 변화, 범프스티어는 조향 링크 좌표까지 포함한 다음 단계에서 계산해야 합니다.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="anti">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>측면도 하드포인트 / 힘 배분</span>
+            </div>
+            <div class="form">
+              <div class="field">
+                <label for="antiFrontBrake">전륜 제동 배분 %</label>
+                <input id="antiFrontBrake" data-key="antiFrontBrake" type="number" value="65" step="1">
+              </div>
+              <div class="field">
+                <label for="antiRearDrive">후륜 구동 배분 %</label>
+                <input id="antiRearDrive" data-key="antiRearDrive" type="number" value="100" step="1">
+              </div>
+              <div class="field"><label for="antiFUInX">전륜 어퍼 차체 X</label><input id="antiFUInX" data-key="antiFUInX" type="number" value="-400" step="1"></div>
+              <div class="field"><label for="antiFUInZ">전륜 어퍼 차체 Z</label><input id="antiFUInZ" data-key="antiFUInZ" type="number" value="410" step="1"></div>
+              <div class="field"><label for="antiFUOutX">전륜 어퍼 휠측 X</label><input id="antiFUOutX" data-key="antiFUOutX" type="number" value="30" step="1"></div>
+              <div class="field"><label for="antiFUOutZ">전륜 어퍼 휠측 Z</label><input id="antiFUOutZ" data-key="antiFUOutZ" type="number" value="390" step="1"></div>
+              <div class="field"><label for="antiFLInX">전륜 로어 차체 X</label><input id="antiFLInX" data-key="antiFLInX" type="number" value="-400" step="1"></div>
+              <div class="field"><label for="antiFLInZ">전륜 로어 차체 Z</label><input id="antiFLInZ" data-key="antiFLInZ" type="number" value="195" step="1"></div>
+              <div class="field"><label for="antiFLOutX">전륜 로어 휠측 X</label><input id="antiFLOutX" data-key="antiFLOutX" type="number" value="0" step="1"></div>
+              <div class="field"><label for="antiFLOutZ">전륜 로어 휠측 Z</label><input id="antiFLOutZ" data-key="antiFLOutZ" type="number" value="205" step="1"></div>
+              <div class="field"><label for="antiRUInX">후륜 어퍼 차체 X</label><input id="antiRUInX" data-key="antiRUInX" type="number" value="2000" step="1"></div>
+              <div class="field"><label for="antiRUInZ">후륜 어퍼 차체 Z</label><input id="antiRUInZ" data-key="antiRUInZ" type="number" value="385" step="1"></div>
+              <div class="field"><label for="antiRUOutX">후륜 어퍼 휠측 X</label><input id="antiRUOutX" data-key="antiRUOutX" type="number" value="1570" step="1"></div>
+              <div class="field"><label for="antiRUOutZ">후륜 어퍼 휠측 Z</label><input id="antiRUOutZ" data-key="antiRUOutZ" type="number" value="390" step="1"></div>
+              <div class="field"><label for="antiRLInX">후륜 로어 차체 X</label><input id="antiRLInX" data-key="antiRLInX" type="number" value="2000" step="1"></div>
+              <div class="field"><label for="antiRLInZ">후륜 로어 차체 Z</label><input id="antiRLInZ" data-key="antiRLInZ" type="number" value="215" step="1"></div>
+              <div class="field"><label for="antiRLOutX">후륜 로어 휠측 X</label><input id="antiRLOutX" data-key="antiRLOutX" type="number" value="1600" step="1"></div>
+              <div class="field"><label for="antiRLOutZ">후륜 로어 휠측 Z</label><input id="antiRLOutZ" data-key="antiRLOutZ" type="number" value="205" step="1"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>Anti-Dive / Anti-Lift / Anti-Squat</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric" id="antiDiveMetric">
+                  <span>Anti-Dive</span>
+                  <strong id="antiDive">-</strong>
+                  <span id="antiDiveGrade">-</span>
+                </div>
+                <div class="metric" id="antiLiftMetric">
+                  <span>Anti-Lift</span>
+                  <strong id="antiLift">-</strong>
+                  <span id="antiLiftGrade">-</span>
+                </div>
+                <div class="metric" id="antiSquatMetric">
+                  <span>Anti-Squat</span>
+                  <strong id="antiSquat">-</strong>
+                  <span id="antiSquatGrade">-</span>
+                </div>
+                <div class="metric">
+                  <span>Side IC</span>
+                  <strong id="antiIcSummary">-</strong>
+                  <span>전륜 / 후륜 순간중심</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>항목</th><th>값</th><th>해석</th></tr>
+                  </thead>
+                  <tbody id="antiTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="antiCanvas" width="900" height="506" aria-label="Anti Geometry 측면도"></canvas>
+              </div>
+              <div class="status warn">V1.7 Anti Geometry는 측면 X-Z 투영 기반 1차 해석입니다. 실제 제동/구동력 분포, 타이어 접지력, 3D 링크 각도, 체인/드라이브라인 높이는 단순화되어 있습니다.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="kinematics3d">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>3D 킹핀축 / 휠 얼라인먼트</span>
+            </div>
+            <div class="form">
+              <div class="field"><label for="k3Ubjx">어퍼 볼조인트 X</label><input id="k3Ubjx" data-key="k3Ubjx" type="number" value="20" step="1"></div>
+              <div class="field"><label for="k3Ubjy">어퍼 볼조인트 Y</label><input id="k3Ubjy" data-key="k3Ubjy" type="number" value="575" step="1"></div>
+              <div class="field"><label for="k3Ubjz">어퍼 볼조인트 Z</label><input id="k3Ubjz" data-key="k3Ubjz" type="number" value="390" step="1"></div>
+              <div class="field"><label for="k3Lbjx">로어 볼조인트 X</label><input id="k3Lbjx" data-key="k3Lbjx" type="number" value="0" step="1"></div>
+              <div class="field"><label for="k3Lbjy">로어 볼조인트 Y</label><input id="k3Lbjy" data-key="k3Lbjy" type="number" value="585" step="1"></div>
+              <div class="field"><label for="k3Lbjz">로어 볼조인트 Z</label><input id="k3Lbjz" data-key="k3Lbjz" type="number" value="205" step="1"></div>
+              <div class="field"><label for="k3Wcx">휠센터 X</label><input id="k3Wcx" data-key="k3Wcx" type="number" value="0" step="1"></div>
+              <div class="field"><label for="k3Wcy">휠센터 Y</label><input id="k3Wcy" data-key="k3Wcy" type="number" value="620" step="1"></div>
+              <div class="field"><label for="k3Wcz">휠센터 Z</label><input id="k3Wcz" data-key="k3Wcz" type="number" value="250" step="1"></div>
+              <div class="field"><label for="k3TireRadius">타이어 반지름 mm</label><input id="k3TireRadius" data-key="k3TireRadius" type="number" value="250" step="1"></div>
+              <div class="field"><label for="k3StaticCamber">정적 캠버 입력 도</label><input id="k3StaticCamber" data-key="k3StaticCamber" type="number" value="-3" step="0.1"></div>
+              <div class="field"><label for="k3StaticToe">정적 토 입력 도</label><input id="k3StaticToe" data-key="k3StaticToe" type="number" value="0" step="0.1"></div>
+              <div class="field"><label for="k3TravelMin">리바운드 mm</label><input id="k3TravelMin" data-key="k3TravelMin" type="number" value="-80" step="5"></div>
+              <div class="field"><label for="k3TravelMax">범프 mm</label><input id="k3TravelMax" data-key="k3TravelMax" type="number" value="80" step="5"></div>
+              <div class="field wide"><label for="k3TravelStep">스윕 간격 mm</label><input id="k3TravelStep" data-key="k3TravelStep" type="number" value="20" step="5"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>KPI / Caster / Scrub / Trail</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric">
+                  <span>KPI / SAI</span>
+                  <strong id="k3Kpi">-</strong>
+                  <span>정면도 조향축 기울기</span>
+                </div>
+                <div class="metric">
+                  <span>Caster</span>
+                  <strong id="k3Caster">-</strong>
+                  <span>측면도 조향축 기울기</span>
+                </div>
+                <div class="metric" id="k3ScrubMetric">
+                  <span>Scrub Radius</span>
+                  <strong id="k3Scrub">-</strong>
+                  <span id="k3ScrubGrade">-</span>
+                </div>
+                <div class="metric">
+                  <span>Mechanical Trail</span>
+                  <strong id="k3Trail">-</strong>
+                  <span>접지점 - 조향축 지면점</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>항목</th><th>값</th><th>해석</th></tr>
+                  </thead>
+                  <tbody id="k3Table"></tbody>
+                </table>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>휠 트래블</th><th>캠버</th><th>토</th><th>KPI</th><th>Caster</th><th>Scrub</th><th>Trail</th></tr>
+                  </thead>
+                  <tbody id="k3SweepTable"></tbody>
+                </table>
+              </div>
+              <div class="canvas-panel">
+                <canvas id="k3Canvas" width="900" height="506" aria-label="3D 얼라인먼트 시각화"></canvas>
+                <canvas id="k3CurveCanvas" width="900" height="380" aria-label="3D 얼라인먼트 스윕 그래프"></canvas>
+              </div>
+              <div class="status warn">V2.0은 3D 조향축과 휠 얼라인먼트를 계산하지만, 범프 스윕은 현재 볼조인트 Z 이동 기반 1차 모델입니다. 완전한 3D 멀티링크 구속 solver는 다음 단계입니다.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const G = 9.80665;
+    const STORAGE_KEY = "gbunge-chassis-calculator-v4-anti-defaults";
+    let vehicleInputsFromCg = false;
+
+    const defaults = {};
+    document.querySelectorAll("[data-key]").forEach((el) => {
+      defaults[el.dataset.key] = el.value;
+    });
+
+    const n = (key) => {
+      const el = document.querySelector(`[data-key="${key}"]`);
+      const value = Number(el.value);
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const fmt = (value, digits = 1, unit = "") => {
+      if (!Number.isFinite(value)) return "-";
+      return `${value.toLocaleString("ko-KR", { maximumFractionDigits: digits, minimumFractionDigits: digits })}${unit}`;
+    };
+
+    const deg = (rad) => rad * 180 / Math.PI;
+    const rad = (degValue) => degValue * Math.PI / 180;
+    const cot = (degValue) => 1 / Math.tan(rad(degValue));
+
+    function setRows(id, rows) {
+      document.getElementById(id).innerHTML = rows.map((row) => (
+        `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`
+      )).join("");
+    }
+
+    function cgParts() {
+      return [...document.querySelectorAll("#cgPartRows tr")].map((row) => ({
+        name: row.querySelector(".cg-part-name").value.trim() || "부품",
+        mass: Number(row.querySelector(".cg-part-mass").value) || 0,
+        x: Number(row.querySelector(".cg-part-x").value) || 0,
+        y: Number(row.querySelector(".cg-part-y").value) || 0,
+        z: Number(row.querySelector(".cg-part-z").value) || 0
+      })).filter((part) => part.mass > 0);
+    }
+
+    function cgResult() {
+      const parts = cgParts();
+      const totalMass = parts.reduce((sum, part) => sum + part.mass, 0);
+      if (totalMass <= 0) {
+        return { parts, totalMass: 0, x: 0, y: 0, z: 0 };
+      }
+      return {
+        parts,
+        totalMass,
+        x: parts.reduce((sum, part) => sum + part.mass * part.x, 0) / totalMass,
+        y: parts.reduce((sum, part) => sum + part.mass * part.y, 0) / totalMass,
+        z: parts.reduce((sum, part) => sum + part.mass * part.z, 0) / totalMass
+      };
+    }
+
+    function escapeAttr(value) {
+      return String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    function addCgPart(part = { name: "새 부품", mass: 0, x: 0, y: 0, z: 0 }) {
+      const tbody = document.getElementById("cgPartRows");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input class="compact-input cg-part-name" value="${escapeAttr(part.name)}"></td>
+        <td><input class="compact-input cg-part-mass" type="number" value="${part.mass}" step="0.1"></td>
+        <td><input class="compact-input cg-part-x" type="number" value="${part.x}" step="1"></td>
+        <td><input class="compact-input cg-part-y" type="number" value="${part.y}" step="1"></td>
+        <td><input class="compact-input cg-part-z" type="number" value="${part.z}" step="1"></td>
+        <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function updateCgCalculator() {
+      const result = cgResult();
+      document.getElementById("cgTotalMass").textContent = fmt(result.totalMass, 1, " kg");
+      document.getElementById("cgVector").textContent = `${fmt(result.x, 0)} / ${fmt(result.y, 0)} / ${fmt(result.z, 0)} mm`;
+      setRows("cgResultTable", [
+        ["총 질량", fmt(result.totalMass, 2, " kg"), "차량 질량"],
+        ["CG X", fmt(result.x, 1, " mm"), "CG X"],
+        ["CG Y", fmt(result.y, 1, " mm"), "CG Y"],
+        ["CG Z", fmt(result.z, 1, " mm"), "CG 높이"]
+      ]);
+      drawCgPackaging(result);
+    }
+
+    function drawCgPackaging(result) {
+      const canvas = document.getElementById("cgCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+
+      const L = Math.max(n("wheelbase"), 1);
+      const xMin = -120;
+      const xMax = L + 160;
+      const yVals = result.parts.flatMap((p) => [p.y]);
+      const yMin = Math.min(-Math.max(n("frontTrack"), n("rearTrack")) / 2 - 120, ...yVals);
+      const yMax = Math.max(Math.max(n("frontTrack"), n("rearTrack")) / 2 + 120, ...yVals);
+      const sx = (x) => 58 + (x - xMin) / (xMax - xMin) * (w - 116);
+      const sy = (y) => h / 2 - y / ((yMax - yMin) || 1) * (h - 96);
+
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(sx(0), 48);
+      ctx.lineTo(sx(0), h - 48);
+      ctx.moveTo(sx(L), 48);
+      ctx.lineTo(sx(L), h - 48);
+      ctx.moveTo(sx(0), sy(0));
+      ctx.lineTo(sx(L), sy(0));
+      ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("전륜축", sx(0) - 18, 34);
+      ctx.fillText("후륜축", sx(L) - 18, 34);
+
+      result.parts.forEach((part) => {
+        const radius = Math.max(5, Math.min(18, Math.sqrt(part.mass) * 1.7));
+        ctx.fillStyle = "rgba(15, 118, 110, 0.7)";
+        ctx.beginPath();
+        ctx.arc(sx(part.x), sy(part.y), radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#334155";
+        ctx.fillText(part.name, sx(part.x) + radius + 4, sy(part.y) - 4);
+      });
+
+      if (result.totalMass > 0) {
+        ctx.strokeStyle = "#b91c1c";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(sx(result.x) - 12, sy(result.y));
+        ctx.lineTo(sx(result.x) + 12, sy(result.y));
+        ctx.moveTo(sx(result.x), sy(result.y) - 12);
+        ctx.lineTo(sx(result.x), sy(result.y) + 12);
+        ctx.stroke();
+        ctx.fillStyle = "#b91c1c";
+        ctx.font = "14px sans-serif";
+        ctx.fillText("전체 CG", sx(result.x) + 16, sy(result.y) + 4);
+      }
+    }
+
+    function applyCgToVehicle() {
+      const result = cgResult();
+      if (result.totalMass <= 0) return;
+      document.getElementById("mass").value = result.totalMass.toFixed(2);
+      document.getElementById("cgX").value = result.x.toFixed(1);
+      document.getElementById("cgY").value = result.y.toFixed(1);
+      document.getElementById("cgHeight").value = result.z.toFixed(1);
+      vehicleInputsFromCg = true;
+      updateVehicleInputState();
+      updateAll();
+      saveState();
+    }
+
+    function updateVehicleInputState() {
+      const state = document.getElementById("vehicleInputState");
+      if (!state) return;
+      state.className = `input-state${vehicleInputsFromCg ? " auto" : ""}`;
+      state.textContent = vehicleInputsFromCg
+        ? "CG 계산기에서 자동 입력됨: 차량 질량, CG X, CG Y, CG 높이가 부품별 CG 결과와 연결되어 있습니다."
+        : "수동 입력 상태입니다. CG 계산 탭의 '차량 제원에 반영'을 누르면 자동 입력 상태로 바뀝니다.";
+    }
+
+    function resetCgParts() {
+      document.getElementById("cgPartRows").innerHTML = "";
+      [
+        { name: "모터", mass: 15, x: 1200, y: 0, z: 250 },
+        { name: "배터리", mass: 20, x: 900, y: 0, z: 180 },
+        { name: "드라이버", mass: 75, x: 800, y: 0, z: 500 }
+      ].forEach(addCgPart);
+    }
+
+    function vehicleLoads() {
+      const mass = n("mass");
+      const weight = mass * G;
+      const L = Math.max(n("wheelbase"), 1);
+      const cgX = Math.min(Math.max(n("cgX"), 0), L);
+      const frontTrack = Math.max(n("frontTrack"), 1);
+      const rearTrack = Math.max(n("rearTrack"), 1);
+      const avgTrack = (frontTrack + rearTrack) / 2;
+      const cgY = n("cgY");
+
+      const front = weight * (L - cgX) / L;
+      const rear = weight * cgX / L;
+      const leftShare = Math.min(Math.max(0.5 + cgY / avgTrack, 0), 1);
+      const rightShare = 1 - leftShare;
+
+      const fl = front * leftShare;
+      const fr = front * rightShare;
+      const rl = rear * leftShare;
+      const rr = rear * rightShare;
+
+      return { weight, front, rear, fl, fr, rl, rr, left: fl + rl, right: fr + rr };
+    }
+
+    function updateVehicle() {
+      const loads = vehicleLoads();
+      document.getElementById("frontLoad").textContent = fmt(loads.front, 0, " N");
+      document.getElementById("rearLoad").textContent = fmt(loads.rear, 0, " N");
+      document.getElementById("frontPct").textContent = `전체의 ${fmt(loads.front / loads.weight * 100, 1, "%")}`;
+      document.getElementById("rearPct").textContent = `전체의 ${fmt(loads.rear / loads.weight * 100, 1, "%")}`;
+      setRows("cornerTable", [
+        ["전륜 좌측", fmt(loads.fl, 0), fmt(loads.fl / G, 1), fmt(loads.fl / loads.weight * 100, 1, "%")],
+        ["전륜 우측", fmt(loads.fr, 0), fmt(loads.fr / G, 1), fmt(loads.fr / loads.weight * 100, 1, "%")],
+        ["후륜 좌측", fmt(loads.rl, 0), fmt(loads.rl / G, 1), fmt(loads.rl / loads.weight * 100, 1, "%")],
+        ["후륜 우측", fmt(loads.rr, 0), fmt(loads.rr / G, 1), fmt(loads.rr / loads.weight * 100, 1, "%")]
+      ]);
+    }
+
+    function updateLoadTransfer() {
+      const base = vehicleLoads();
+      const mass = n("mass");
+      const h = n("cgHeight");
+      const L = Math.max(n("wheelbase"), 1);
+      const frontTrack = Math.max(n("frontTrack"), 1);
+      const rearTrack = Math.max(n("rearTrack"), 1);
+      const avgTrack = (frontTrack + rearTrack) / 2;
+      const accel = n("accelG");
+      const brake = n("brakeG");
+      const lat = n("latG");
+      const frontRoll = Math.min(Math.max(n("rollFrontShare") / 100, 0), 1);
+
+      const accelTransfer = mass * G * accel * h / L;
+      const brakeTransfer = mass * G * brake * h / L;
+      const lateralTotal = mass * G * lat * h / avgTrack;
+      const latFront = lateralTotal * frontRoll;
+      const latRear = lateralTotal * (1 - frontRoll);
+      const lltd = lateralTotal === 0 ? frontRoll * 100 : latFront / lateralTotal * 100;
+      const lltdEval = evaluateLltd(lltd);
+
+      document.getElementById("brakeTransfer").textContent = fmt(brakeTransfer, 0, " N");
+      document.getElementById("accelTransfer").textContent = fmt(accelTransfer, 0, " N");
+      document.getElementById("frontLltd").textContent = fmt(lltd, 1, "%");
+      document.getElementById("rearLltd").textContent = `후륜 ${fmt(100 - lltd, 1, "%")}`;
+      document.getElementById("handlingBias").textContent = lltdEval.label;
+      document.getElementById("lltdMetric").className = `metric ${lltdEval.className}`;
+
+      setRows("loadTable", [
+        ["정지 상태", fmt(base.front, 0), fmt(base.rear, 0), fmt(base.left, 0), fmt(base.right, 0)],
+        ["제동", fmt(base.front + brakeTransfer, 0), fmt(base.rear - brakeTransfer, 0), "-", "-"],
+        ["가속", fmt(base.front - accelTransfer, 0), fmt(base.rear + accelTransfer, 0), "-", "-"],
+        ["횡가속 전체, 좌측 바깥쪽 예시", "-", "-", fmt(base.weight / 2 + lateralTotal / 2, 0), fmt(base.weight / 2 - lateralTotal / 2, 0)],
+        ["전륜 횡하중이동", fmt(latFront, 0), "-", "바깥쪽 증가", "안쪽 감소"],
+        ["후륜 횡하중이동", "-", fmt(latRear, 0), "바깥쪽 증가", "안쪽 감소"]
+      ]);
+    }
+
+    function evaluateLltd(lltd) {
+      if (lltd >= 65) return { label: "강한 언더", className: "bad" };
+      if (lltd >= 60) return { label: "언더스티어", className: "caution" };
+      if (lltd >= 55) return { label: "약한 언더", className: "warn" };
+      if (lltd >= 45) return { label: "중립", className: "good" };
+      if (lltd >= 40) return { label: "약한 오버", className: "warn" };
+      if (lltd >= 35) return { label: "오버스티어", className: "caution" };
+      return { label: "강한 오버", className: "bad" };
+    }
+
+    function updateSteering() {
+      const L = Math.max(n("wheelbase"), 1);
+      const track = Math.max(n("frontTrack"), 1);
+      const R = Math.max(n("turnRadius"), track / 2 + 1);
+      const innerIdeal = deg(Math.atan(L / Math.max(R - track / 2, 1)));
+      const outerIdeal = deg(Math.atan(L / (R + track / 2)));
+      const innerMeasured = Math.max(n("innerMeasured"), 0.1);
+      const outerMeasured = Math.max(n("outerMeasured"), 0.1);
+      const idealCotDiff = cot(outerIdeal) - cot(innerIdeal);
+      const measuredCotDiff = cot(outerMeasured) - cot(innerMeasured);
+      const ackermann = idealCotDiff === 0 ? 0 : measuredCotDiff / idealCotDiff * 100;
+      const rackAngle = deg(Math.asin(Math.min(Math.abs(n("rackTravel")) / Math.max(n("tieRod"), 1), 0.999)));
+      const rackOffsetEffect = n("rackY") / Math.max(track / 2, 1) * 100;
+
+      document.getElementById("idealSteer").textContent = `${fmt(innerIdeal, 1, "도")} / ${fmt(outerIdeal, 1, "도")}`;
+      document.getElementById("ackermann").textContent = fmt(ackermann, 1, "%");
+      const ackMetric = document.getElementById("ackMetric");
+      ackMetric.className = "metric " + (ackermann >= 80 && ackermann <= 120 ? "good" : ackermann >= 50 && ackermann <= 150 ? "warn" : "bad");
+
+      setRows("steeringTable", [
+        ["이상 내륜각", fmt(innerIdeal, 2, "도"), "목표 회전반경 기준"],
+        ["이상 외륜각", fmt(outerIdeal, 2, "도"), "목표 회전반경 기준"],
+        ["입력 내륜각 / 외륜각", `${fmt(innerMeasured, 2, "도")} / ${fmt(outerMeasured, 2, "도")}`, "실측값 또는 별도 지오메트리 해석값"],
+        ["Ackermann 비율", fmt(ackermann, 1, "%"), "100%에 가까울수록 이상 Ackermann"],
+        ["랙 기반 단순 조향각", fmt(rackAngle, 2, "도"), "asin(랙 이동량 / 타이로드 길이)"],
+        ["랙 Y 오프셋", fmt(rackOffsetEffect, 1, "% 반트랙"), "반트랙 대비 중앙 오프셋"]
+      ]);
+      updateSteeringHardpointSolver();
+    }
+
+    function rotate2(point, theta) {
+      const c = Math.cos(theta);
+      const s = Math.sin(theta);
+      return {
+        x: point.x * c - point.y * s,
+        y: point.x * s + point.y * c
+      };
+    }
+
+    function dist2xy(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function solveSteerAngle(kingpin, armRel, innerMoved, tieRodLength) {
+      let bestTheta = 0;
+      let bestErr = Infinity;
+      for (let degValue = -50; degValue <= 50; degValue += 0.25) {
+        const theta = rad(degValue);
+        const arm = rotate2(armRel, theta);
+        const outer = { x: kingpin.x + arm.x, y: kingpin.y + arm.y };
+        const err = Math.abs(dist2xy(outer, innerMoved) - tieRodLength);
+        if (err < bestErr) {
+          bestErr = err;
+          bestTheta = theta;
+        }
+      }
+      return deg(bestTheta);
+    }
+
+    function steeringHardpointModel() {
+      const track = Math.max(n("frontTrack"), 1);
+      const rackX = n("steerRackX");
+      const innerY = Math.abs(n("steerInnerY"));
+      const armRel = { x: n("steerArmX"), y: n("steerArmY") };
+      const leftKingpin = { x: 0, y: track / 2 };
+      const rightKingpin = { x: 0, y: -track / 2 };
+      const leftInner = { x: rackX, y: innerY };
+      const rightInner = { x: rackX, y: -innerY };
+      const leftOuterStatic = { x: leftKingpin.x + armRel.x, y: leftKingpin.y + armRel.y };
+      const rightArmRel = { x: armRel.x, y: -armRel.y };
+      const rightOuterStatic = { x: rightKingpin.x + rightArmRel.x, y: rightKingpin.y + rightArmRel.y };
+      return {
+        track,
+        leftKingpin,
+        rightKingpin,
+        leftInner,
+        rightInner,
+        leftArmRel: armRel,
+        rightArmRel,
+        leftTieRodLength: dist2xy(leftInner, leftOuterStatic),
+        rightTieRodLength: dist2xy(rightInner, rightOuterStatic)
+      };
+    }
+
+    function steeringState(model, travel) {
+      const leftInnerMoved = { x: model.leftInner.x, y: model.leftInner.y + travel };
+      const rightInnerMoved = { x: model.rightInner.x, y: model.rightInner.y + travel };
+      const leftAngle = solveSteerAngle(model.leftKingpin, model.leftArmRel, leftInnerMoved, model.leftTieRodLength);
+      const rightAngle = solveSteerAngle(model.rightKingpin, model.rightArmRel, rightInnerMoved, model.rightTieRodLength);
+      const leftAbs = Math.abs(leftAngle);
+      const rightAbs = Math.abs(rightAngle);
+      const innerAngle = leftAbs >= rightAbs ? leftAbs : rightAbs;
+      const outerAngle = leftAbs >= rightAbs ? rightAbs : leftAbs;
+      const ackBase = model.track / Math.max(n("wheelbase"), 1);
+      const ack = innerAngle > 0.1 && outerAngle > 0.1
+        ? (cot(outerAngle) - cot(innerAngle)) / ackBase * 100
+        : 0;
+      return { travel, leftAngle, rightAngle, innerAngle, outerAngle, ackermann: ack };
+    }
+
+    function steeringSweep() {
+      const model = steeringHardpointModel();
+      const minTravel = Math.min(n("steerSweepMin"), n("steerSweepMax"));
+      const maxTravel = Math.max(n("steerSweepMin"), n("steerSweepMax"));
+      const step = Math.max(Math.abs(n("steerSweepStep")), 1);
+      const rows = [];
+      for (let travel = minTravel; travel <= maxTravel + 0.0001; travel += step) {
+        rows.push(steeringState(model, travel));
+      }
+      if (!rows.some((row) => Math.abs(row.travel) < 0.001)) {
+        rows.push(steeringState(model, 0));
+        rows.sort((a, b) => a.travel - b.travel);
+      }
+      return rows;
+    }
+
+    function updateSteeringHardpointSolver() {
+      const rows = steeringSweep();
+      const maxInner = Math.max(...rows.map((row) => row.innerAngle));
+      const usefulAck = rows.filter((row) => row.innerAngle > 1 && row.outerAngle > 1).map((row) => row.ackermann);
+      const maxAck = usefulAck.length ? Math.max(...usefulAck) : 0;
+      document.getElementById("steerMaxInner").textContent = fmt(maxInner, 2, "도");
+      document.getElementById("steerMaxAck").textContent = fmt(maxAck, 1, "%");
+      setRows("steeringSweepTable", rows.map((row) => [
+        fmt(row.travel, 0, " mm"),
+        fmt(row.leftAngle, 2, "도"),
+        fmt(row.rightAngle, 2, "도"),
+        fmt(row.innerAngle, 2, "도"),
+        fmt(row.outerAngle, 2, "도"),
+        fmt(row.ackermann, 1, "%")
+      ]));
+      drawSteeringCurves(rows);
+    }
+
+    function drawSteeringCurves(rows) {
+      const canvas = document.getElementById("steeringCurveCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+      const pad = { l: 58, r: 24, t: 30, b: 52 };
+      const xVals = rows.map((r) => r.travel);
+      const xMin = Math.min(...xVals);
+      const xMax = Math.max(...xVals);
+      const sx = (x) => pad.l + (x - xMin) / ((xMax - xMin) || 1) * (w - pad.l - pad.r);
+
+      function axes() {
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.l, pad.t);
+        ctx.lineTo(pad.l, h - pad.b);
+        ctx.lineTo(w - pad.r, h - pad.b);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "13px sans-serif";
+        ctx.fillText("랙 이동 mm", pad.l, h - 18);
+      }
+
+      function plot(key, color, label, bandIndex, bandCount, digits = 2) {
+        const values = rows.map((row) => row[key]).filter(Number.isFinite);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const bandH = (h - pad.t - pad.b) / bandCount;
+        const top = pad.t + bandIndex * bandH + 10;
+        const bottom = pad.t + (bandIndex + 1) * bandH - 16;
+        const sy = (v) => bottom - (v - min) / ((max - min) || 1) * (bottom - top);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        rows.forEach((row, index) => {
+          const x = sx(row.travel);
+          const y = sy(row[key]);
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "14px sans-serif";
+        ctx.fillText(`${label} (${fmt(min, digits)} ~ ${fmt(max, digits)})`, pad.l + 8, top + 14);
+      }
+
+      axes();
+      plot("leftAngle", "#0f766e", "Left Wheel Angle", 0, 3, 2);
+      plot("rightAngle", "#2563eb", "Right Wheel Angle", 1, 3, 2);
+      plot("ackermann", "#b45309", "Ackermann %", 2, 3, 1);
+    }
+
+    function lineFromPoints(a, b) {
+      const m = (b.z - a.z) / ((b.y - a.y) || 1e-9);
+      const c = a.z - m * a.y;
+      return { m, c };
+    }
+
+    function intersect(l1, l2) {
+      const y = (l2.c - l1.c) / ((l1.m - l2.m) || 1e-9);
+      return { y, z: l1.m * y + l1.c };
+    }
+
+    function updateSuspension() {
+      const uIn = { y: n("upperInY"), z: n("upperInZ") };
+      const uOut = { y: n("upperOutY"), z: n("upperOutZ") };
+      const lIn = { y: n("lowerInY"), z: n("lowerInZ") };
+      const lOut = { y: n("lowerOutY"), z: n("lowerOutZ") };
+      const wc = { y: n("wheelCenterY"), z: n("wheelCenterZ") };
+      const tireContact = { y: wc.y, z: 0 };
+
+      const upperLine = lineFromPoints(uIn, uOut);
+      const lowerLine = lineFromPoints(lIn, lOut);
+      const instantCenter = intersect(upperLine, lowerLine);
+      const rcLine = lineFromPoints(instantCenter, tireContact);
+      const rollCenter = rcLine.c;
+      const camber = deg(Math.atan2(uOut.y - lOut.y, uOut.z - lOut.z));
+      const motionRatio = n("springShock") / Math.max(n("springWheel"), 1);
+
+      document.getElementById("camber").textContent = fmt(camber, 2, "도");
+      document.getElementById("rollCenter").textContent = fmt(rollCenter, 1, " mm");
+      updateRollCenterEvaluation(rollCenter);
+
+      setRows("suspTable", [
+        ["순간중심 Y/Z", `${fmt(instantCenter.y, 1)} / ${fmt(instantCenter.z, 1)} mm`, "어퍼암/로어암 연장선 교점"],
+        ["롤센터 높이", fmt(rollCenter, 1, " mm"), "중심선 Y=0 교점"],
+        ["정적 캠버", fmt(camber, 2, "도"), "상하 볼조인트 기울기"],
+        ["모션비", fmt(motionRatio, 3), "댐퍼 스트로크 / 휠 스트로크"],
+        ["설치비", fmt(1 / motionRatio, 3), "휠 스트로크 / 댐퍼 스트로크"]
+      ]);
+
+      drawSuspension({ uIn, uOut, lIn, lOut, wc, tireContact, instantCenter, rollCenter });
+    }
+
+    function updateRollCenterEvaluation(rollCenter) {
+      const box = document.getElementById("rollCenterEval");
+      const grade = rollCenterGrade(rollCenter);
+      const title = `롤센터 ${grade.label}`;
+      const detail = grade.detail;
+      const cls = `status ${grade.className}`.trim();
+      box.className = cls;
+      box.textContent = `${title}: ${detail}`;
+    }
+
+    function rollCenterGrade(rollCenter) {
+      if (rollCenter < 0) {
+        return {
+          label: "매우 낮음",
+          className: "warn",
+          detail: "재킹은 작고 접지 변화는 부드럽지만, 롤 모멘트가 커져 스프링/안티롤바 강성 요구가 커집니다."
+        };
+      }
+      if (rollCenter < 50) {
+        return {
+          label: "낮음",
+          className: "",
+          detail: "재킹을 낮게 유지하면서 롤센터가 지면 위에 있습니다. Baja 초기값으로 무난한 범위입니다."
+        };
+      }
+      if (rollCenter < 100) {
+        return {
+          label: "적정",
+          className: "",
+          detail: "롤 모멘트와 재킹이 모두 중간 수준입니다. CG 높이, 트랙, 롤강성과 함께 최종 판단하세요."
+        };
+      }
+      if (rollCenter < 150) {
+        return {
+          label: "높음",
+          className: "warn",
+          detail: "롤 모멘트는 줄지만 재킹이 커질 수 있습니다. 범프/롤 중 롤센터 이동도 같이 확인하세요."
+        };
+      }
+      return {
+        label: "매우 높음",
+        className: "bad",
+        detail: "재킹과 수직하중 변화가 커질 수 있습니다. 특별한 의도가 없다면 하드포인트 재검토가 필요합니다."
+      };
+    }
+
+    function drawSuspension(data) {
+      const canvas = document.getElementById("suspCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+
+      const points = [data.uIn, data.uOut, data.lIn, data.lOut, data.wc, data.tireContact, data.instantCenter, { y: 0, z: data.rollCenter }];
+      const minY = Math.min(0, ...points.map((p) => p.y)) - 80;
+      const maxY = Math.max(...points.map((p) => p.y)) + 80;
+      const minZ = Math.min(-40, ...points.map((p) => p.z)) - 40;
+      const maxZ = Math.max(...points.map((p) => p.z)) + 60;
+      const sx = (y) => 46 + (y - minY) / (maxY - minY) * (w - 92);
+      const sy = (z) => h - 44 - (z - minZ) / (maxZ - minZ) * (h - 88);
+
+      function line(a, b, color, width = 3) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(sx(a.y), sy(a.z));
+        ctx.lineTo(sx(b.y), sy(b.z));
+        ctx.stroke();
+      }
+
+      function dot(p, label, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(sx(p.y), sy(p.z), 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#334155";
+        ctx.font = "13px sans-serif";
+        ctx.fillText(label, sx(p.y) + 8, sy(p.z) - 8);
+      }
+
+      line({ y: minY, z: 0 }, { y: maxY, z: 0 }, "#cbd5e1", 2);
+      line({ y: 0, z: minZ }, { y: 0, z: maxZ }, "#cbd5e1", 2);
+      line(data.uIn, data.uOut, "#0f766e");
+      line(data.lIn, data.lOut, "#0f766e");
+      line(data.uOut, data.lOut, "#b45309", 2);
+      line(data.instantCenter, data.tireContact, "#64748b", 2);
+      dot(data.uIn, "어퍼 차체", "#0f766e");
+      dot(data.uOut, "어퍼 휠", "#0f766e");
+      dot(data.lIn, "로어 차체", "#0f766e");
+      dot(data.lOut, "로어 휠", "#0f766e");
+      dot(data.wc, "휠센터", "#2563eb");
+      dot(data.instantCenter, "순간중심", "#64748b");
+      dot({ y: 0, z: data.rollCenter }, "롤센터", "#b45309");
+    }
+
+    function p3(prefix) {
+      return {
+        x: n(`${prefix}x`),
+        y: n(`${prefix}y`),
+        z: n(`${prefix}z`)
+      };
+    }
+
+    function midpoint3(a, b) {
+      return {
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+        z: (a.z + b.z) / 2
+      };
+    }
+
+    function dist3(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+
+    function dist2(a, b) {
+      return Math.hypot(a.y - b.y, a.z - b.z);
+    }
+
+    function solveProjectedBall(inner, initialBall, travel) {
+      const side = Math.sign(initialBall.y - inner.y) || 1;
+      const length = Math.max(dist2(inner, initialBall), 1);
+      const z = initialBall.z + travel;
+      const dz = z - inner.z;
+      const available = Math.max(length * length - dz * dz, 0);
+      return {
+        x: initialBall.x,
+        y: inner.y + side * Math.sqrt(available),
+        z
+      };
+    }
+
+    function shockLength(body, wheel) {
+      return dist3(body, wheel);
+    }
+
+    function getHardpointModel() {
+      const ufi = p3("hpUFI");
+      const uri = p3("hpURI");
+      const ubj = p3("hpUBJ");
+      const lfi = p3("hpLFI");
+      const lri = p3("hpLRI");
+      const lbj = p3("hpLBJ");
+      const wc = p3("hpWC");
+      const shockBody = p3("hpShockBody");
+      const shockWheel = p3("hpShockWheel");
+      const innerTieRod = p3("hpItr");
+      const outerTieRod = p3("hpOtr");
+      const upperInner = midpoint3(ufi, uri);
+      const lowerInner = midpoint3(lfi, lri);
+      const hubOffsetY = wc.y - (ubj.y + lbj.y) / 2;
+      const shockOffset = {
+        x: shockWheel.x - wc.x,
+        y: shockWheel.y - wc.y,
+        z: shockWheel.z - wc.z
+      };
+      const tieRodLength = dist3(innerTieRod, outerTieRod);
+      const outerTieRodOffset = {
+        x: outerTieRod.x - wc.x,
+        y: outerTieRod.y - wc.y,
+        z: outerTieRod.z - wc.z
+      };
+      const staticToeProxy = toeProxy(wc, outerTieRod);
+
+      return {
+        upperInner,
+        lowerInner,
+        ubj,
+        lbj,
+        wc,
+        shockBody,
+        shockWheel,
+        innerTieRod,
+        outerTieRod,
+        hubOffsetY,
+        shockOffset,
+        tieRodLength,
+        outerTieRodOffset,
+        staticToeProxy
+      };
+    }
+
+    function toeProxy(wc, outerTieRod) {
+      return deg(Math.atan2(outerTieRod.x - wc.x, outerTieRod.y - wc.y));
+    }
+
+    function solveOuterTieRod(model, wc) {
+      const base = {
+        x: wc.x + model.outerTieRodOffset.x,
+        y: wc.y + model.outerTieRodOffset.y,
+        z: wc.z + model.outerTieRodOffset.z
+      };
+      const dx = base.x - model.innerTieRod.x;
+      const dz = base.z - model.innerTieRod.z;
+      const available = Math.max(model.tieRodLength * model.tieRodLength - dx * dx - dz * dz, 0);
+      const side = Math.sign(base.y - model.innerTieRod.y) || 1;
+      return {
+        x: base.x,
+        y: model.innerTieRod.y + side * Math.sqrt(available),
+        z: base.z
+      };
+    }
+
+    function hardpointState(model, travel, staticShockLength) {
+      const ubj = solveProjectedBall(model.upperInner, model.ubj, travel);
+      const lbj = solveProjectedBall(model.lowerInner, model.lbj, travel);
+      const wc = {
+        x: model.wc.x,
+        y: (ubj.y + lbj.y) / 2 + model.hubOffsetY,
+        z: model.wc.z + travel
+      };
+      const tireContact = { y: wc.y, z: 0 };
+      const upperLine = lineFromPoints(model.upperInner, ubj);
+      const lowerLine = lineFromPoints(model.lowerInner, lbj);
+      const instantCenter = intersect(upperLine, lowerLine);
+      const rcLine = lineFromPoints(instantCenter, tireContact);
+      const shockWheel = {
+        x: wc.x + model.shockOffset.x,
+        y: wc.y + model.shockOffset.y,
+        z: wc.z + model.shockOffset.z
+      };
+      const outerTieRod = solveOuterTieRod(model, wc);
+      const length = shockLength(model.shockBody, shockWheel);
+      const camber = deg(Math.atan2(ubj.y - lbj.y, ubj.z - lbj.z));
+      const toeChange = toeProxy(wc, outerTieRod) - model.staticToeProxy;
+
+      return {
+        travel,
+        camber,
+        rollCenter: rcLine.c,
+        trackChange: wc.y - model.wc.y,
+        toeChange,
+        shockLength: length,
+        motionRatio: travel === 0 ? 0 : Math.abs((length - staticShockLength) / travel),
+        ubj,
+        lbj,
+        wc,
+        outerTieRod,
+        instantCenter
+      };
+    }
+
+    function hardpointSweep() {
+      const model = getHardpointModel();
+      const minTravel = Math.min(n("hpTravelMin"), n("hpTravelMax"));
+      const maxTravel = Math.max(n("hpTravelMin"), n("hpTravelMax"));
+      const step = Math.max(Math.abs(n("hpTravelStep")), 1);
+      const staticShockLength = shockLength(model.shockBody, model.shockWheel);
+      const rows = [];
+
+      for (let travel = minTravel; travel <= maxTravel + 0.0001; travel += step) {
+        rows.push(hardpointState(model, travel, staticShockLength));
+      }
+      if (!rows.some((row) => Math.abs(row.travel) < 0.001)) {
+        rows.push(hardpointState(model, 0, staticShockLength));
+        rows.sort((a, b) => a.travel - b.travel);
+      }
+
+      const finiteStep = step || 10;
+      const plus = hardpointState(model, finiteStep, staticShockLength);
+      const minus = hardpointState(model, -finiteStep, staticShockLength);
+      const staticRow = hardpointState(model, 0, staticShockLength);
+      staticRow.motionRatio = Math.abs((plus.shockLength - staticShockLength) / finiteStep);
+
+      return rows.map((row) => Math.abs(row.travel) < 0.001 ? staticRow : row)
+        .map((row) => ({ ...row, motionRatio: row.motionRatio || staticRow.motionRatio }));
+    }
+
+    function updateHardpointSuspension() {
+      const rows = hardpointSweep();
+      const springRate = Math.max(n("hpSpringRate"), 0);
+      const tireRate = Math.max(n("hpTireRate"), 0);
+      rows.forEach((row) => {
+        row.wheelRate = springRate * row.motionRatio * row.motionRatio;
+        row.rideRate = tireRate > 0 && row.wheelRate > 0
+          ? row.wheelRate * tireRate / (row.wheelRate + tireRate)
+          : row.wheelRate;
+      });
+      const staticRow = rows.find((row) => Math.abs(row.travel) < 0.001) || rows[0];
+      const positiveRows = rows.filter((row) => row.travel > 0);
+      const bumpRow = positiveRows[positiveRows.length - 1] || rows[rows.length - 1];
+      const camberGain = (bumpRow.camber - staticRow.camber) / Math.max(Math.abs(bumpRow.travel - staticRow.travel), 1) * 25.4;
+      const rcValues = rows.map((row) => row.rollCenter).filter(Number.isFinite);
+      const rcMin = Math.min(...rcValues);
+      const rcMax = Math.max(...rcValues);
+      const toeValues = rows.map((row) => row.toeChange).filter(Number.isFinite);
+      const toeMin = Math.min(...toeValues);
+      const toeMax = Math.max(...toeValues);
+      const trackValues = rows.map((row) => row.trackChange).filter(Number.isFinite);
+      const trackMin = Math.min(...trackValues);
+      const trackMax = Math.max(...trackValues);
+
+      document.getElementById("hpCamberGain").textContent = fmt(camberGain, 2, "도/in");
+      document.getElementById("hpRcRange").textContent = `${fmt(rcMin, 0)} ~ ${fmt(rcMax, 0)} mm`;
+      document.getElementById("hpBumpSteer").textContent = `${fmt(toeMin, 2)} ~ ${fmt(toeMax, 2)}도`;
+      document.getElementById("hpTrackRange").textContent = `${fmt(trackMin, 1)} ~ ${fmt(trackMax, 1)} mm`;
+      document.getElementById("hpWheelRate").textContent = fmt(staticRow.wheelRate, 1, " lb/in");
+      document.getElementById("hpRideRate").textContent = fmt(staticRow.rideRate, 1, " lb/in");
+
+      setRows("hpSweepTable", rows.map((row) => [
+        fmt(row.travel, 0, " mm"),
+        fmt(row.camber, 2, "도"),
+        fmt(row.rollCenter, 1, " mm"),
+        fmt(row.trackChange, 1, " mm"),
+        fmt(row.toeChange, 2, "도"),
+        fmt(row.motionRatio, 3),
+        fmt(row.wheelRate, 1),
+        fmt(row.rideRate, 1)
+      ]));
+
+      drawHardpointCurves(rows);
+      drawToeCurve(rows);
+    }
+
+    function drawHardpointCurves(rows) {
+      const canvas = document.getElementById("hpCurveCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = { l: 58, r: 24, t: 28, b: 54 };
+      const xVals = rows.map((r) => r.travel);
+      const xMin = Math.min(...xVals);
+      const xMax = Math.max(...xVals);
+      const sx = (x) => pad.l + (x - xMin) / ((xMax - xMin) || 1) * (w - pad.l - pad.r);
+
+      function drawAxes() {
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.l, pad.t);
+        ctx.lineTo(pad.l, h - pad.b);
+        ctx.lineTo(w - pad.r, h - pad.b);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "13px sans-serif";
+        ctx.fillText("리바운드  ←  휠 트래블 mm  →  범프", pad.l, h - 18);
+      }
+
+      function plot(key, color, label, bandIndex, bandCount, digits = 2) {
+        const values = rows.map((r) => r[key]).filter(Number.isFinite);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const bandH = (h - pad.t - pad.b) / bandCount;
+        const top = pad.t + bandIndex * bandH + 12;
+        const bottom = pad.t + (bandIndex + 1) * bandH - 18;
+        const sy = (v) => bottom - (v - min) / ((max - min) || 1) * (bottom - top);
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        rows.forEach((row, index) => {
+          const x = sx(row.travel);
+          const y = sy(row[key]);
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "14px sans-serif";
+        ctx.fillText(`${label} (${fmt(min, digits)} ~ ${fmt(max, digits)})`, pad.l + 8, top + 14);
+      }
+
+      drawAxes();
+      plot("camber", "#0f766e", "Camber vs Travel", 0, 5, 2);
+      plot("rollCenter", "#b45309", "Roll Center vs Travel", 1, 5, 1);
+      plot("trackChange", "#7c3aed", "Track Change vs Travel", 2, 5, 1);
+      plot("toeChange", "#b91c1c", "Bump Steer / Toe Change", 3, 5, 2);
+      plot("motionRatio", "#2563eb", "Motion Ratio", 4, 5, 3);
+    }
+
+    function drawToeCurve(rows) {
+      const canvas = document.getElementById("hpToeCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = { l: 58, r: 24, t: 32, b: 50 };
+      const xVals = rows.map((r) => r.travel);
+      const yVals = rows.map((r) => r.toeChange);
+      const xMin = Math.min(...xVals);
+      const xMax = Math.max(...xVals);
+      const yMin = Math.min(-0.1, ...yVals);
+      const yMax = Math.max(0.1, ...yVals);
+      const sx = (x) => pad.l + (x - xMin) / ((xMax - xMin) || 1) * (w - pad.l - pad.r);
+      const sy = (y) => h - pad.b - (y - yMin) / ((yMax - yMin) || 1) * (h - pad.t - pad.b);
+
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, pad.t);
+      ctx.lineTo(pad.l, h - pad.b);
+      ctx.lineTo(w - pad.r, h - pad.b);
+      ctx.moveTo(pad.l, sy(0));
+      ctx.lineTo(w - pad.r, sy(0));
+      ctx.stroke();
+
+      ctx.strokeStyle = "#b91c1c";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      rows.forEach((row, index) => {
+        const x = sx(row.travel);
+        const y = sy(row.toeChange);
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = "#334155";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(`Toe vs Wheel Travel (${fmt(yMin, 2)} ~ ${fmt(yMax, 2)}도)`, pad.l, 22);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("리바운드  ←  휠 트래블 mm  →  범프", pad.l, h - 16);
+      ctx.fillText("0도 기준선", w - 96, sy(0) - 6);
+    }
+
+    function pointXZ(xKey, zKey) {
+      return { x: n(xKey), z: n(zKey) };
+    }
+
+    function lineFromXZ(a, b) {
+      const m = (b.z - a.z) / ((b.x - a.x) || 1e-9);
+      const c = a.z - m * a.x;
+      return { m, c };
+    }
+
+    function intersectXZ(l1, l2) {
+      const x = (l2.c - l1.c) / ((l1.m - l2.m) || 1e-9);
+      return { x, z: l1.m * x + l1.c };
+    }
+
+    function sideViewIc(upperIn, upperOut, lowerIn, lowerOut) {
+      return intersectXZ(lineFromXZ(upperIn, upperOut), lineFromXZ(lowerIn, lowerOut));
+    }
+
+    function forceLineSlope(contact, ic) {
+      return (ic.z - contact.z) / ((ic.x - contact.x) || 1e-9);
+    }
+
+    function antiGrade(value, targetLow = 10, targetHigh = 35) {
+      if (!Number.isFinite(value)) return { label: "계산 불안정", className: "bad" };
+      if (value < 0) return { label: "역방향", className: "bad" };
+      if (value < targetLow) return { label: "낮음", className: "" };
+      if (value <= targetHigh) return { label: "적정", className: "good" };
+      if (value <= 60) return { label: "높음", className: "warn" };
+      return { label: "매우 높음", className: "bad" };
+    }
+
+    function updateAntiGeometry() {
+      const L = Math.max(n("wheelbase"), 1);
+      const h = Math.max(n("cgHeight"), 1);
+      const frontContact = { x: 0, z: 0 };
+      const rearContact = { x: L, z: 0 };
+      const frontIc = sideViewIc(
+        pointXZ("antiFUInX", "antiFUInZ"),
+        pointXZ("antiFUOutX", "antiFUOutZ"),
+        pointXZ("antiFLInX", "antiFLInZ"),
+        pointXZ("antiFLOutX", "antiFLOutZ")
+      );
+      const rearIc = sideViewIc(
+        pointXZ("antiRUInX", "antiRUInZ"),
+        pointXZ("antiRUOutX", "antiRUOutZ"),
+        pointXZ("antiRLInX", "antiRLInZ"),
+        pointXZ("antiRLOutX", "antiRLOutZ")
+      );
+      const frontBrakeShare = Math.min(Math.max(n("antiFrontBrake") / 100, 0), 1);
+      const rearBrakeShare = 1 - frontBrakeShare;
+      const rearDriveShare = Math.min(Math.max(n("antiRearDrive") / 100, 0), 1);
+      const frontSlope = forceLineSlope(frontContact, frontIc);
+      const rearSlope = forceLineSlope(rearContact, rearIc);
+      const antiDive = Math.max(0, frontSlope * L / h * frontBrakeShare * 100);
+      const antiLift = Math.max(0, -rearSlope * L / h * rearBrakeShare * 100);
+      const antiSquat = Math.max(0, rearSlope * L / h * rearDriveShare * 100);
+      const diveGrade = antiGrade(antiDive, 8, 25);
+      const liftGrade = antiGrade(antiLift, 5, 20);
+      const squatGrade = antiGrade(antiSquat, 15, 45);
+
+      document.getElementById("antiDive").textContent = fmt(antiDive, 1, "%");
+      document.getElementById("antiLift").textContent = fmt(antiLift, 1, "%");
+      document.getElementById("antiSquat").textContent = fmt(antiSquat, 1, "%");
+      document.getElementById("antiDiveGrade").textContent = diveGrade.label;
+      document.getElementById("antiLiftGrade").textContent = liftGrade.label;
+      document.getElementById("antiSquatGrade").textContent = squatGrade.label;
+      document.getElementById("antiDiveMetric").className = `metric ${diveGrade.className}`;
+      document.getElementById("antiLiftMetric").className = `metric ${liftGrade.className}`;
+      document.getElementById("antiSquatMetric").className = `metric ${squatGrade.className}`;
+      document.getElementById("antiIcSummary").textContent = `${fmt(frontIc.x, 0)} / ${fmt(rearIc.x, 0)} mm`;
+
+      setRows("antiTable", [
+        ["Front Side IC", `${fmt(frontIc.x, 1)} / ${fmt(frontIc.z, 1)} mm`, "전륜 어퍼/로어 측면도 연장선 교점"],
+        ["Rear Side IC", `${fmt(rearIc.x, 1)} / ${fmt(rearIc.z, 1)} mm`, "후륜 어퍼/로어 측면도 연장선 교점"],
+        ["Anti-Dive", fmt(antiDive, 1, "%"), "제동 중 전륜 다이브 억제 1차 추정"],
+        ["Anti-Lift", fmt(antiLift, 1, "%"), "제동 중 후륜 리프트 억제 1차 추정"],
+        ["Anti-Squat", fmt(antiSquat, 1, "%"), "가속 중 후륜 스쿼트 억제 1차 추정"]
+      ]);
+
+      drawAntiGeometry({ L, frontContact, rearContact, frontIc, rearIc });
+    }
+
+    function drawAntiGeometry(data) {
+      const canvas = document.getElementById("antiCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+      const fPts = [
+        pointXZ("antiFUInX", "antiFUInZ"), pointXZ("antiFUOutX", "antiFUOutZ"),
+        pointXZ("antiFLInX", "antiFLInZ"), pointXZ("antiFLOutX", "antiFLOutZ")
+      ];
+      const rPts = [
+        pointXZ("antiRUInX", "antiRUInZ"), pointXZ("antiRUOutX", "antiRUOutZ"),
+        pointXZ("antiRLInX", "antiRLInZ"), pointXZ("antiRLOutX", "antiRLOutZ")
+      ];
+      const all = [...fPts, ...rPts, data.frontContact, data.rearContact, data.frontIc, data.rearIc].filter((p) => Number.isFinite(p.x) && Number.isFinite(p.z));
+      const minX = Math.min(0, ...all.map((p) => p.x)) - 120;
+      const maxX = Math.max(data.L, ...all.map((p) => p.x)) + 120;
+      const minZ = Math.min(-50, ...all.map((p) => p.z)) - 30;
+      const maxZ = Math.max(550, ...all.map((p) => p.z)) + 60;
+      const sx = (x) => 52 + (x - minX) / ((maxX - minX) || 1) * (w - 104);
+      const sy = (z) => h - 46 - (z - minZ) / ((maxZ - minZ) || 1) * (h - 92);
+
+      function line(a, b, color, width = 3) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(sx(a.x), sy(a.z));
+        ctx.lineTo(sx(b.x), sy(b.z));
+        ctx.stroke();
+      }
+      function dot(p, label, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(sx(p.x), sy(p.z), 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#334155";
+        ctx.font = "13px sans-serif";
+        ctx.fillText(label, sx(p.x) + 8, sy(p.z) - 8);
+      }
+
+      line({ x: minX, z: 0 }, { x: maxX, z: 0 }, "#cbd5e1", 2);
+      line(data.frontContact, data.rearContact, "#94a3b8", 2);
+      line(fPts[0], fPts[1], "#0f766e");
+      line(fPts[2], fPts[3], "#0f766e");
+      line(rPts[0], rPts[1], "#2563eb");
+      line(rPts[2], rPts[3], "#2563eb");
+      line(data.frontContact, data.frontIc, "#b45309", 2);
+      line(data.rearContact, data.rearIc, "#b45309", 2);
+      dot(data.frontContact, "전륜 접지", "#64748b");
+      dot(data.rearContact, "후륜 접지", "#64748b");
+      dot(data.frontIc, "Front IC", "#b45309");
+      dot(data.rearIc, "Rear IC", "#b45309");
+    }
+
+    function vSub(a, b) {
+      return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+    }
+
+    function vAdd(a, b) {
+      return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+    }
+
+    function vScale(a, s) {
+      return { x: a.x * s, y: a.y * s, z: a.z * s };
+    }
+
+    function k3AlignmentAt(travel = 0) {
+      const ubj = vAdd(p3("k3Ubj"), { x: 0, y: 0, z: travel });
+      const lbj = vAdd(p3("k3Lbj"), { x: 0, y: 0, z: travel });
+      const wc = vAdd(p3("k3Wc"), { x: 0, y: 0, z: travel });
+      const d = vSub(ubj, lbj);
+      const t = -lbj.z / (d.z || 1e-9);
+      const axisGround = vAdd(lbj, vScale(d, t));
+      const contact = { x: wc.x, y: wc.y, z: 0 };
+      const kpi = deg(Math.atan2(Math.abs(d.y), Math.abs(d.z || 1e-9)));
+      const caster = deg(Math.atan2(d.x, Math.abs(d.z || 1e-9)));
+      const scrub = axisGround.y - contact.y;
+      const trail = contact.x - axisGround.x;
+      return {
+        travel,
+        ubj,
+        lbj,
+        wc,
+        axisGround,
+        contact,
+        kpi,
+        caster,
+        scrub,
+        trail,
+        camber: n("k3StaticCamber"),
+        toe: n("k3StaticToe")
+      };
+    }
+
+    function k3Sweep() {
+      const minTravel = Math.min(n("k3TravelMin"), n("k3TravelMax"));
+      const maxTravel = Math.max(n("k3TravelMin"), n("k3TravelMax"));
+      const step = Math.max(Math.abs(n("k3TravelStep")), 1);
+      const rows = [];
+      for (let travel = minTravel; travel <= maxTravel + 0.0001; travel += step) {
+        rows.push(k3AlignmentAt(travel));
+      }
+      if (!rows.some((row) => Math.abs(row.travel) < 0.001)) {
+        rows.push(k3AlignmentAt(0));
+        rows.sort((a, b) => a.travel - b.travel);
+      }
+      return rows;
+    }
+
+    function scrubGrade(scrub) {
+      const value = Math.abs(scrub);
+      if (value < 20) return { label: "작음", className: "good" };
+      if (value < 60) return { label: "보통", className: "" };
+      if (value < 100) return { label: "큼", className: "warn" };
+      return { label: "매우 큼", className: "bad" };
+    }
+
+    function updateKinematics3d() {
+      const state = k3AlignmentAt(0);
+      const rows = k3Sweep();
+      const grade = scrubGrade(state.scrub);
+      document.getElementById("k3Kpi").textContent = fmt(state.kpi, 2, "도");
+      document.getElementById("k3Caster").textContent = fmt(state.caster, 2, "도");
+      document.getElementById("k3Scrub").textContent = fmt(state.scrub, 1, " mm");
+      document.getElementById("k3Trail").textContent = fmt(state.trail, 1, " mm");
+      document.getElementById("k3ScrubGrade").textContent = grade.label;
+      document.getElementById("k3ScrubMetric").className = `metric ${grade.className}`;
+
+      setRows("k3Table", [
+        ["KPI / SAI", fmt(state.kpi, 2, "도"), "정면 Y-Z에서 조향축과 수직선 사이 각도"],
+        ["Caster", fmt(state.caster, 2, "도"), "측면 X-Z에서 조향축 기울기, +X는 후륜 방향"],
+        ["Scrub Radius", fmt(state.scrub, 1, " mm"), "조향축 지면점 Y - 타이어 접지점 Y"],
+        ["Mechanical Trail", fmt(state.trail, 1, " mm"), "타이어 접지점 X - 조향축 지면점 X"],
+        ["조향축 지면점 X/Y", `${fmt(state.axisGround.x, 1)} / ${fmt(state.axisGround.y, 1)} mm`, "킹핀축이 지면과 만나는 위치"]
+      ]);
+
+      setRows("k3SweepTable", rows.map((row) => [
+        fmt(row.travel, 0, " mm"),
+        fmt(row.camber, 2, "도"),
+        fmt(row.toe, 2, "도"),
+        fmt(row.kpi, 2, "도"),
+        fmt(row.caster, 2, "도"),
+        fmt(row.scrub, 1, " mm"),
+        fmt(row.trail, 1, " mm")
+      ]));
+
+      drawK3Canvas(state);
+      drawK3Curves(rows);
+    }
+
+    function drawK3Canvas(state) {
+      const canvas = document.getElementById("k3Canvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+
+      const left = { x: 48, y: 46, w: (w - 120) / 2, h: h - 92 };
+      const right = { x: left.x + left.w + 64, y: 46, w: left.w, h: left.h };
+
+      function drawPanel(panel, title, xKey, yKey, xLabel) {
+        const pts = [state.ubj, state.lbj, state.wc, state.axisGround, state.contact];
+        const xs = pts.map((p) => p[xKey]);
+        const ys = pts.map((p) => p[yKey]);
+        const minX = Math.min(...xs) - 80;
+        const maxX = Math.max(...xs) + 80;
+        const minY = Math.min(0, ...ys) - 40;
+        const maxY = Math.max(...ys) + 80;
+        const sx = (v) => panel.x + (v - minX) / ((maxX - minX) || 1) * panel.w;
+        const sy = (v) => panel.y + panel.h - (v - minY) / ((maxY - minY) || 1) * panel.h;
+        ctx.fillStyle = "#334155";
+        ctx.font = "14px sans-serif";
+        ctx.fillText(title, panel.x, panel.y - 16);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(panel.x, sy(0));
+        ctx.lineTo(panel.x + panel.w, sy(0));
+        ctx.stroke();
+        ctx.strokeStyle = "#b45309";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(sx(state.lbj[xKey]), sy(state.lbj[yKey]));
+        ctx.lineTo(sx(state.ubj[xKey]), sy(state.ubj[yKey]));
+        ctx.stroke();
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx(state.axisGround[xKey]), sy(state.axisGround[yKey]));
+        ctx.lineTo(sx(state.contact[xKey]), sy(state.contact[yKey]));
+        ctx.stroke();
+        [[state.ubj, "UBJ", "#0f766e"], [state.lbj, "LBJ", "#0f766e"], [state.wc, "WC", "#2563eb"], [state.axisGround, "Axis", "#b91c1c"], [state.contact, "Contact", "#64748b"]].forEach(([p, label, color]) => {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(sx(p[xKey]), sy(p[yKey]), 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#334155";
+          ctx.font = "12px sans-serif";
+          ctx.fillText(label, sx(p[xKey]) + 7, sy(p[yKey]) - 6);
+        });
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(xLabel, panel.x, panel.y + panel.h + 28);
+      }
+
+      drawPanel(left, "Front View: KPI / Scrub", "y", "z", "Y-Z");
+      drawPanel(right, "Side View: Caster / Trail", "x", "z", "X-Z");
+    }
+
+    function drawK3Curves(rows) {
+      const canvas = document.getElementById("k3CurveCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, w, h);
+      const pad = { l: 58, r: 24, t: 28, b: 48 };
+      const xVals = rows.map((r) => r.travel);
+      const xMin = Math.min(...xVals);
+      const xMax = Math.max(...xVals);
+      const sx = (x) => pad.l + (x - xMin) / ((xMax - xMin) || 1) * (w - pad.l - pad.r);
+
+      function plot(key, color, label, bandIndex, bandCount, digits = 1) {
+        const values = rows.map((r) => r[key]).filter(Number.isFinite);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const bandH = (h - pad.t - pad.b) / bandCount;
+        const top = pad.t + bandIndex * bandH + 8;
+        const bottom = pad.t + (bandIndex + 1) * bandH - 14;
+        const sy = (v) => bottom - (v - min) / ((max - min) || 1) * (bottom - top);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        rows.forEach((row, index) => {
+          const x = sx(row.travel);
+          const y = sy(row[key]);
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "14px sans-serif";
+        ctx.fillText(`${label} (${fmt(min, digits)} ~ ${fmt(max, digits)})`, pad.l + 8, top + 14);
+      }
+
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, pad.t);
+      ctx.lineTo(pad.l, h - pad.b);
+      ctx.lineTo(w - pad.r, h - pad.b);
+      ctx.stroke();
+      plot("scrub", "#b91c1c", "Scrub Radius vs Travel", 0, 3, 1);
+      plot("trail", "#b45309", "Mechanical Trail vs Travel", 1, 3, 1);
+      plot("caster", "#2563eb", "Caster vs Travel", 2, 3, 2);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("리바운드  ←  휠 트래블 mm  →  범프", pad.l, h - 16);
+    }
+
+    function updateAll() {
+      updateCgCalculator();
+      updateVehicle();
+      updateLoadTransfer();
+      updateSteering();
+      updateSuspension();
+      updateHardpointSuspension();
+      updateAntiGeometry();
+      updateKinematics3d();
+    }
+
+    function saveState() {
+      const state = {};
+      document.querySelectorAll("[data-key]").forEach((el) => {
+        state[el.dataset.key] = el.value;
+      });
+      state.__cgParts = cgParts();
+      state.__vehicleInputsFromCg = vehicleInputsFromCg;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        Object.entries(state).forEach(([key, value]) => {
+          if (key === "__cgParts") return;
+          const el = document.querySelector(`[data-key="${key}"]`);
+          if (el) el.value = value;
+        });
+        if (Array.isArray(state.__cgParts) && state.__cgParts.length) {
+          document.getElementById("cgPartRows").innerHTML = "";
+          state.__cgParts.forEach(addCgPart);
+        }
+        vehicleInputsFromCg = Boolean(state.__vehicleInputsFromCg);
+        updateVehicleInputState();
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    document.getElementById("cgPartRows").addEventListener("input", () => {
+      updateAll();
+      saveState();
+    });
+
+    document.getElementById("cgPartRows").addEventListener("click", (event) => {
+      if (!event.target.classList.contains("cg-remove")) return;
+      const rows = document.querySelectorAll("#cgPartRows tr");
+      if (rows.length <= 1) return;
+      event.target.closest("tr").remove();
+      updateAll();
+      saveState();
+    });
+
+    document.getElementById("addCgPartBtn").addEventListener("click", () => {
+      addCgPart();
+      updateAll();
+      saveState();
+    });
+
+    document.getElementById("applyCgBtn").addEventListener("click", applyCgToVehicle);
+
+    document.querySelectorAll("[data-key]").forEach((el) => {
+      el.addEventListener("input", () => {
+        if (["mass", "cgX", "cgY", "cgHeight"].includes(el.dataset.key)) {
+          vehicleInputsFromCg = false;
+          updateVehicleInputState();
+        }
+        updateAll();
+        saveState();
+      });
+    });
+
+    document.querySelectorAll("[data-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-tab]").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll("[data-module]").forEach((el) => el.classList.remove("active"));
+        button.classList.add("active");
+        document.querySelector(`[data-module="${button.dataset.tab}"]`).classList.add("active");
+      });
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", saveState);
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.entries(defaults).forEach(([key, value]) => {
+        document.querySelector(`[data-key="${key}"]`).value = value;
+      });
+      resetCgParts();
+      vehicleInputsFromCg = false;
+      updateVehicleInputState();
+      localStorage.removeItem(STORAGE_KEY);
+      updateAll();
+    });
+
+    loadState();
+    updateVehicleInputState();
+    updateAll();
+  </script>
+</body>
+</html>
