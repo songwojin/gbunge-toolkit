@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>지붕이 샤시 계산기</title>
+  <title>Formula Chassis & Suspension Calculator</title>
   <style>
     :root {
       --bg: #f5f7fa;
@@ -452,8 +452,8 @@
   <div class="app">
     <aside>
       <div class="brand">
-        <strong>지붕이 샤시 계산기</strong>
-        <span>차량 제원, 하중이동, 조향, 현가 기초 계산을 한 화면에서 빠르게 확인합니다.</span>
+        <strong>Formula Chassis & Suspension Calculator</strong>
+        <span>Formula 초기 패키징, 하중이동, 조향, 현가 기초 계산을 한 화면에서 비교합니다.</span>
       </div>
       <nav class="nav" aria-label="계산 모듈">
         <button class="active" type="button" data-tab="cg">CG 계산</button>
@@ -462,6 +462,9 @@
         <button type="button" data-tab="steering">조향</button>
         <button type="button" data-tab="suspension">현가</button>
         <button type="button" data-tab="hardpoint">하드포인트 현가</button>
+        <button type="button" data-tab="springroll">스프링/롤</button>
+        <button type="button" data-tab="loads">하중/브레이크</button>
+        <button type="button" data-tab="masspack">질량/패키징</button>
         <button type="button" data-tab="anti">Anti Geometry</button>
         <button type="button" data-tab="kinematics3d">3D Kinematics</button>
       </nav>
@@ -474,8 +477,8 @@
     <main>
       <section class="top">
         <div>
-          <h1>프레임 설계용 차량 계산기</h1>
-          <p class="lead">초기 패키징 단계에서 프레임 하드포인트와 차량 제원을 바꿔 보며 정적 하중, 동적 하중이동, Ackermann 조향, 기본 현가 지오메트리 값을 빠르게 비교합니다.</p>
+          <h1>Formula Chassis & Suspension Calculator</h1>
+          <p class="lead">초기 패키징 단계에서 하드포인트와 차량 제원을 바꿔 보며 정적 하중, 동적 하중이동, Ackermann 조향, 현가 지오메트리 값을 빠르게 비교합니다.</p>
         </div>
         <div class="unit-note">
           원점 O는 전륜 차축 중심의 지면점입니다. +X는 후륜 방향, +Y는 차량 좌측, +Z는 상방입니다.
@@ -490,6 +493,7 @@
               <span>부품별 질량 / 좌표</span>
             </div>
             <div class="results">
+              <div class="status">Formula 1차 설계 사용 가능: 부품별 질량과 좌표를 이용한 정적 CG 계산입니다.</div>
               <div class="table-wrap">
                 <table>
                   <thead>
@@ -571,6 +575,7 @@
               <span>질량 / CG / 패키징</span>
             </div>
             <div class="form">
+              <div class="input-state auto">Formula 1차 설계 사용 가능: CG X, CG Y, CG 높이 기반 정적 하중 분배입니다.</div>
               <div class="input-state" id="vehicleInputState">수동 입력 상태입니다.</div>
               <div class="field">
                 <label for="mass">차량 질량 kg</label>
@@ -590,7 +595,7 @@
               </div>
               <div class="field">
                 <label for="cgHeight">CG 높이 mm</label>
-                <input id="cgHeight" data-key="cgHeight" type="number" value="420" step="1">
+                <input id="cgHeight" data-key="cgHeight" type="number" value="300" step="1">
               </div>
               <div class="field">
                 <label for="cgX">CG X mm, 전륜축에서 후륜 방향</label>
@@ -640,6 +645,9 @@
               <span>가속도 / 감속도 / 횡가속도</span>
             </div>
             <div class="form">
+              <div class="field wide">
+                <div class="status">Formula 1차 설계 사용 가능: rigid body 하중이동 모델입니다. 타이어 비선형, 실제 롤센터 이동, 스프링/ARB 탄성 분배는 별도 검증이 필요합니다.</div>
+              </div>
               <div class="field">
                 <label for="accelG">가속도 g</label>
                 <input id="accelG" data-key="accelG" type="number" value="0.45" step="0.01">
@@ -706,6 +714,9 @@
               <span>랙 / 타이로드 / 목표 회전</span>
             </div>
             <div class="form">
+              <div class="field wide">
+                <div class="status warn">Top View 2D 해석: Ackermann과 rack travel 관계를 빠르게 보는 용도입니다. 킹핀 경사, 캐스터, 범프, 스크럽, 실제 너클 3D 자세는 반영하지 않습니다.</div>
+              </div>
               <div class="field">
                 <label for="turnRadius">목표 회전반경 mm</label>
                 <input id="turnRadius" data-key="turnRadius" type="number" value="8000" step="10">
@@ -713,6 +724,14 @@
               <div class="field">
                 <label for="rackTravel">랙 이동량 mm</label>
                 <input id="rackTravel" data-key="rackTravel" type="number" value="35" step="0.1">
+              </div>
+              <div class="field">
+                <label for="steeringWheelAngle">스티어링휠 각도 deg</label>
+                <input id="steeringWheelAngle" data-key="steeringWheelAngle" type="number" value="180" step="5">
+              </div>
+              <div class="field">
+                <label for="pinionRadius">피니언 반경 m</label>
+                <input id="pinionRadius" data-key="pinionRadius" type="number" value="0.012" step="0.001">
               </div>
               <div class="field">
                 <label for="rackY">랙 위치 Y mm</label>
@@ -787,6 +806,16 @@
                   <strong id="steerMaxAck">-</strong>
                   <span>좌회전 방향 기준</span>
                 </div>
+                <div class="metric">
+                  <span>Steering Ratio</span>
+                  <strong id="steeringRatio">-</strong>
+                  <span>handwheel / road wheel</span>
+                </div>
+                <div class="metric">
+                  <span>Minimum Turning Radius</span>
+                  <strong id="minTurningRadius">-</strong>
+                  <span id="ackermannError">Ackermann error</span>
+                </div>
               </div>
               <div class="table-wrap">
                 <table>
@@ -820,6 +849,9 @@
               <span>하드포인트 좌표</span>
             </div>
             <div class="form">
+              <div class="field wide">
+                <div class="status warn">Front View 2D 해석: 정면 Y-Z 투영 기반 롤센터/캠버/모션비 1차 계산입니다.</div>
+              </div>
               <div class="field">
                 <label for="upperInY">어퍼암 차체측 Y mm</label>
                 <input id="upperInY" data-key="upperInY" type="number" value="260" step="1">
@@ -912,6 +944,9 @@
               <span>3D 하드포인트 / 범프 스윕</span>
             </div>
             <div class="form">
+              <div class="field wide">
+                <div class="status warn">3D 입력 + 2D 투영 스윕: 좌표는 3D지만 암 운동은 정면 Y-Z 투영 기반입니다.</div>
+              </div>
               <div class="field"><label for="hpUFIx">어퍼 전방 차체 X</label><input id="hpUFIx" data-key="hpUFIx" type="number" value="-280" step="1"></div>
               <div class="field"><label for="hpUFIy">어퍼 전방 차체 Y</label><input id="hpUFIy" data-key="hpUFIy" type="number" value="255" step="1"></div>
               <div class="field"><label for="hpUFIz">어퍼 전방 차체 Z</label><input id="hpUFIz" data-key="hpUFIz" type="number" value="430" step="1"></div>
@@ -949,8 +984,8 @@
               <div class="field"><label for="hpOtry">타이로드 바깥쪽 Y</label><input id="hpOtry" data-key="hpOtry" type="number" value="570" step="1"></div>
               <div class="field"><label for="hpOtrz">타이로드 바깥쪽 Z</label><input id="hpOtrz" data-key="hpOtrz" type="number" value="245" step="1"></div>
 
-              <div class="field"><label for="hpSpringRate">스프링 레이트 lb/in</label><input id="hpSpringRate" data-key="hpSpringRate" type="number" value="250" step="5"></div>
-              <div class="field"><label for="hpTireRate">타이어 수직강성 lb/in</label><input id="hpTireRate" data-key="hpTireRate" type="number" value="900" step="10"></div>
+              <div class="field"><label for="hpSpringRate">스프링 레이트 N/mm</label><input id="hpSpringRate" data-key="hpSpringRate" type="number" value="44" step="0.5"></div>
+              <div class="field"><label for="hpTireRate">타이어 수직강성 N/mm</label><input id="hpTireRate" data-key="hpTireRate" type="number" value="158" step="1"></div>
               <div class="field"><label for="hpTravelMin">리바운드 mm</label><input id="hpTravelMin" data-key="hpTravelMin" type="number" value="-80" step="5"></div>
               <div class="field"><label for="hpTravelMax">범프 mm</label><input id="hpTravelMax" data-key="hpTravelMax" type="number" value="80" step="5"></div>
               <div class="field"><label for="hpTravelStep">간격 mm</label><input id="hpTravelStep" data-key="hpTravelStep" type="number" value="20" step="5"></div>
@@ -976,7 +1011,7 @@
                 <div class="metric">
                   <span>범프스티어</span>
                   <strong id="hpBumpSteer">-</strong>
-                  <span>범프/리바운드 최대 변화</span>
+                  <span id="hpToeDirection">범프/리바운드 최대 변화</span>
                 </div>
                 <div class="metric">
                   <span>최대 트랙 변화</span>
@@ -1006,7 +1041,148 @@
                 <canvas id="hpCurveCanvas" width="900" height="506" aria-label="하드포인트 스윕 곡선"></canvas>
                 <canvas id="hpToeCanvas" width="900" height="320" aria-label="Toe vs Wheel Travel 그래프"></canvas>
               </div>
-              <div class="status warn">현재 버전은 3D 좌표를 입력받지만 정면 Y-Z 투영 기반 1차 스윕입니다. 실제 3D 기구학, 토 변화, 범프스티어는 조향 링크 좌표까지 포함한 다음 단계에서 계산해야 합니다.</div>
+              <div class="status warn">현재 버전은 3D 좌표와 타이로드 길이 구속을 사용하지만, 암 운동은 정면 Y-Z 투영 기반입니다. 실제 3D 멀티바디 solver 전 단계의 설계 검토용 1차 해석입니다.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="springroll">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>Ride Frequency / Roll Stiffness / Roll Gradient</span>
+            </div>
+            <div class="form">
+              <div class="field wide">
+                <div class="status">Formula 1차 설계 사용 가능: 스프링 세팅, 롤강성 분배, 롤 그래디언트를 SI 단위로 비교합니다.</div>
+              </div>
+              <div class="field"><label for="rfFrontCornerWeight">전륜 코너 하중 N</label><input id="rfFrontCornerWeight" data-key="rfFrontCornerWeight" type="number" value="520" step="10"></div>
+              <div class="field"><label for="rfRearCornerWeight">후륜 코너 하중 N</label><input id="rfRearCornerWeight" data-key="rfRearCornerWeight" type="number" value="705" step="10"></div>
+              <div class="field"><label for="rfFrontWheelRate">전륜 휠레이트 N/mm</label><input id="rfFrontWheelRate" data-key="rfFrontWheelRate" type="number" value="24" step="0.5"></div>
+              <div class="field"><label for="rfRearWheelRate">후륜 휠레이트 N/mm</label><input id="rfRearWheelRate" data-key="rfRearWheelRate" type="number" value="28" step="0.5"></div>
+              <div class="field"><label for="rfFrontUnsprung">전륜 언스프렁 질량 kg/코너</label><input id="rfFrontUnsprung" data-key="rfFrontUnsprung" type="number" value="14" step="0.1"></div>
+              <div class="field"><label for="rfRearUnsprung">후륜 언스프렁 질량 kg/코너</label><input id="rfRearUnsprung" data-key="rfRearUnsprung" type="number" value="16" step="0.1"></div>
+              <div class="field"><label for="rollFrontArb">전륜 안티롤바 강성 N·m/rad</label><input id="rollFrontArb" data-key="rollFrontArb" type="number" value="80" step="1"></div>
+              <div class="field"><label for="rollRearArb">후륜 안티롤바 강성 N·m/rad</label><input id="rollRearArb" data-key="rollRearArb" type="number" value="60" step="1"></div>
+              <div class="field"><label for="rollCenterHeight">롤센터 높이 m</label><input id="rollCenterHeight" data-key="rollCenterHeight" type="number" value="0.05" step="0.005"></div>
+              <div class="field"><label for="totalRollStiffnessOverride">총 롤강성 직접 입력 N·m/rad, 0=자동</label><input id="totalRollStiffnessOverride" data-key="totalRollStiffnessOverride" type="number" value="0" step="1"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>스프링 세팅 / 롤 성향</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric"><span>Front Ride Frequency</span><strong id="frontRideFreq">-</strong><span>sprung mass 기준</span></div>
+                <div class="metric"><span>Rear Ride Frequency</span><strong id="rearRideFreq">-</strong><span>sprung mass 기준</span></div>
+                <div class="metric" id="rollDistMetric"><span>Roll Stiffness Distribution</span><strong id="rollStiffDist">-</strong><span id="rollDistBias">LLTD 연동</span></div>
+                <div class="metric"><span>Roll Gradient</span><strong id="rollGradient">-</strong><span>deg/g</span></div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>항목</th><th>값</th><th>설계 의미</th></tr></thead>
+                  <tbody id="springRollTable"></tbody>
+                </table>
+              </div>
+              <p class="explain">Ride frequency는 f = 1/(2π)√(Kwheel/Msprung)입니다. 스프링/휠레이트 입력은 N/mm 기준입니다. 롤강성은 Kφ = Kw·track²/2 + ARB 강성의 1차 모델입니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="loads">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>Pushrod / Suspension Load / Brake Bias</span>
+            </div>
+            <div class="form">
+              <div class="field wide">
+                <div class="status warn">FEA 하중 조건 1차 산정: 하드포인트 좌표 기반 링크 축력 근사입니다. 최종 브라켓 하중은 CAD 자유물체도와 별도 검증이 필요합니다.</div>
+              </div>
+              <div class="field"><label for="pfWheelLoad">휠 수직하중 N</label><input id="pfWheelLoad" data-key="pfWheelLoad" type="number" value="1200" step="10"></div>
+              <div class="field"><label for="pfMotionRatio">모션비, 댐퍼/휠</label><input id="pfMotionRatio" data-key="pfMotionRatio" type="number" value="0.7" step="0.01"></div>
+              <div class="field"><label for="pfPushrodAngle">푸시로드 각도 deg, 하중방향 기준</label><input id="pfPushrodAngle" data-key="pfPushrodAngle" type="number" value="35" step="1"></div>
+              <div class="field"><label for="pfDamperAngle">댐퍼 각도 deg, 푸시로드 기준</label><input id="pfDamperAngle" data-key="pfDamperAngle" type="number" value="15" step="1"></div>
+              <div class="field"><label for="pfSpringRate">스프링 레이트 N/mm</label><input id="pfSpringRate" data-key="pfSpringRate" type="number" value="30" step="0.5"></div>
+              <div class="field"><label for="slCorneringG">코너링 g</label><input id="slCorneringG" data-key="slCorneringG" type="number" value="1.2" step="0.05"></div>
+              <div class="field"><label for="slBrakingG">제동 g</label><input id="slBrakingG" data-key="slBrakingG" type="number" value="0.8" step="0.05"></div>
+              <div class="field"><label for="slSafetyFactor">하중 안전계수</label><input id="slSafetyFactor" data-key="slSafetyFactor" type="number" value="1.5" step="0.1"></div>
+              <div class="field"><label for="brakeFrontPistonArea">전륜 캘리퍼 피스톤 면적 m²</label><input id="brakeFrontPistonArea" data-key="brakeFrontPistonArea" type="number" value="0.0009" step="0.0001"></div>
+              <div class="field"><label for="brakeRearPistonArea">후륜 캘리퍼 피스톤 면적 m²</label><input id="brakeRearPistonArea" data-key="brakeRearPistonArea" type="number" value="0.0007" step="0.0001"></div>
+              <div class="field"><label for="brakeFrontDiscRadius">전륜 유효 디스크 반경 m</label><input id="brakeFrontDiscRadius" data-key="brakeFrontDiscRadius" type="number" value="0.09" step="0.005"></div>
+              <div class="field"><label for="brakeRearDiscRadius">후륜 유효 디스크 반경 m</label><input id="brakeRearDiscRadius" data-key="brakeRearDiscRadius" type="number" value="0.08" step="0.005"></div>
+              <div class="field"><label for="brakeBalanceBarFront">밸런스바 전륜 압력비</label><input id="brakeBalanceBarFront" data-key="brakeBalanceBarFront" type="number" value="0.6" step="0.01"></div>
+              <div class="field"><label for="brakeMuPad">패드 마찰계수</label><input id="brakeMuPad" data-key="brakeMuPad" type="number" value="0.42" step="0.01"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>FEA 하중 조건 / 제동 배분</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric"><span>Pushrod Force</span><strong id="pushrodForce">-</strong><span>브라켓 축하중 추정</span></div>
+                <div class="metric"><span>Damper Force</span><strong id="damperForce">-</strong><span>댐퍼/스프링 축하중</span></div>
+                <div class="metric"><span>Spring Compression</span><strong id="springCompression">-</strong><span>정적 압축량</span></div>
+                <div class="metric" id="brakeBiasMetric"><span>Brake Bias</span><strong id="actualBrakeBias">-</strong><span id="brakeLock">락업 예상</span></div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead>
+                  <tbody id="loadsTable"></tbody>
+                </table>
+              </div>
+              <p class="explain">Suspension Load는 하드포인트 탭의 UBJ/LBJ, 타이로드, 푸시로드 좌표를 함께 사용한 휠센터 자유물체도 1차 근사입니다. 실제 FEA 최종 하중은 타이어 접촉력 방향, 암 2-force 가정, 브라켓 오프셋을 별도 검증해야 합니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" data-module="masspack">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>입력</h2>
+              <span>Unsprung/Sprung / Yaw Inertia / Packaging</span>
+            </div>
+            <div class="form">
+              <div class="field wide">
+                <div class="status">Formula 1차 설계 사용 가능: 질량 분리, Iz 추정, 캠버 인 롤, 범프/드룹 패키징 확인용입니다.</div>
+              </div>
+              <div class="field"><label for="umWheelTire">휠/타이어 질량 kg/코너</label><input id="umWheelTire" data-key="umWheelTire" type="number" value="8" step="0.1"></div>
+              <div class="field"><label for="umKnuckleHub">허브/너클 질량 kg/코너</label><input id="umKnuckleHub" data-key="umKnuckleHub" type="number" value="4" step="0.1"></div>
+              <div class="field"><label for="umBrake">브레이크 질량 kg/코너</label><input id="umBrake" data-key="umBrake" type="number" value="2" step="0.1"></div>
+              <div class="field"><label for="umArmShare">암 언스프렁 환산 질량 kg/코너</label><input id="umArmShare" data-key="umArmShare" type="number" value="1.5" step="0.1"></div>
+              <div class="field"><label for="packRideHeight">Ride height m</label><input id="packRideHeight" data-key="packRideHeight" type="number" value="0.28" step="0.005"></div>
+              <div class="field"><label for="packTireRadius">타이어 반지름 m</label><input id="packTireRadius" data-key="packTireRadius" type="number" value="0.25" step="0.005"></div>
+              <div class="field"><label for="packFrameBottomHeight">프레임 최저점 높이 m</label><input id="packFrameBottomHeight" data-key="packFrameBottomHeight" type="number" value="0.18" step="0.005"></div>
+              <div class="field"><label for="packBumpTravel">범프 트래블 m</label><input id="packBumpTravel" data-key="packBumpTravel" type="number" value="0.08" step="0.005"></div>
+              <div class="field"><label for="packDroopTravel">리바운드 트래블 m</label><input id="packDroopTravel" data-key="packDroopTravel" type="number" value="0.08" step="0.005"></div>
+              <div class="field"><label for="packDamperStroke">댐퍼 총 스트로크 m</label><input id="packDamperStroke" data-key="packDamperStroke" type="number" value="0.11" step="0.005"></div>
+              <div class="field"><label for="rollAngleInput">롤각 deg</label><input id="rollAngleInput" data-key="rollAngleInput" type="number" value="3" step="0.1"></div>
+              <div class="field"><label for="camberGainPerM">캠버 게인 deg/m</label><input id="camberGainPerM" data-key="camberGainPerM" type="number" value="-25" step="1"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>출력</h2>
+              <span>질량 분리 / 회두성 / 패키징 체크</span>
+            </div>
+            <div class="results">
+              <div class="hero-result">
+                <div class="metric"><span>Unsprung Mass</span><strong id="unsprungMass">-</strong><span>코너 / 차량 전체</span></div>
+                <div class="metric"><span>Sprung Mass</span><strong id="sprungMass">-</strong><span>차량 전체</span></div>
+                <div class="metric"><span>Yaw Moment Iz</span><strong id="yawInertia">-</strong><span>부품별 CG 기반</span></div>
+                <div class="metric" id="packMetric"><span>Packaging Check</span><strong id="packStatus">-</strong><span id="packUsage">댐퍼 스트로크</span></div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>항목</th><th>값</th><th>평가</th></tr></thead>
+                  <tbody id="massPackTable"></tbody>
+                </table>
+              </div>
+              <p class="explain">Yaw inertia는 부품을 점질량으로 본 Iz = Σm[(x-CGx)²+(y-CGy)²] 추정입니다. 부품별 CG 테이블을 상세히 넣을수록 회두성 비교에 쓸 만해집니다.</p>
             </div>
           </div>
         </section>
@@ -1095,6 +1271,9 @@
               <span>3D 킹핀축 / 휠 얼라인먼트</span>
             </div>
             <div class="form">
+              <div class="field wide">
+                <div class="status warn">조향축 계산 가능, 완전 3D 구속해석 아님: KPI, Caster, Scrub, Trail은 계산하지만 범프 스윕은 Z 이동 기반 1차 모델입니다.</div>
+              </div>
               <div class="field"><label for="k3Ubjx">어퍼 볼조인트 X</label><input id="k3Ubjx" data-key="k3Ubjx" type="number" value="20" step="1"></div>
               <div class="field"><label for="k3Ubjy">어퍼 볼조인트 Y</label><input id="k3Ubjy" data-key="k3Ubjy" type="number" value="575" step="1"></div>
               <div class="field"><label for="k3Ubjz">어퍼 볼조인트 Z</label><input id="k3Ubjz" data-key="k3Ubjz" type="number" value="390" step="1"></div>
@@ -1170,7 +1349,7 @@
 
   <script>
     const G = 9.80665;
-    const STORAGE_KEY = "gbunge-chassis-calculator-v4-anti-defaults";
+    const STORAGE_KEY = "gbunge-chassis-calculator-v5-si-design-calcs";
     let vehicleInputsFromCg = false;
 
     const defaults = {};
@@ -1443,9 +1622,19 @@
       const ackermann = idealCotDiff === 0 ? 0 : measuredCotDiff / idealCotDiff * 100;
       const rackAngle = deg(Math.asin(Math.min(Math.abs(n("rackTravel")) / Math.max(n("tieRod"), 1), 0.999)));
       const rackOffsetEffect = n("rackY") / Math.max(track / 2, 1) * 100;
+      const steeringRatio = innerMeasured > 0 ? n("steeringWheelAngle") / innerMeasured : 0;
+      const pinionRackTravelM = rad(n("steeringWheelAngle")) * Math.max(n("pinionRadius"), 0);
+      const lockToLockDeg = Math.max(n("rackTravel"), 0.001) * 2 / Math.max(pinionRackTravelM * 1000 / Math.max(n("steeringWheelAngle"), 1), 0.001);
+      const minTurningRadius = innerMeasured > 0
+        ? L / Math.tan(rad(innerMeasured)) + track / 2
+        : Infinity;
+      const ackermannError = Math.abs(ackermann - 100);
 
       document.getElementById("idealSteer").textContent = `${fmt(innerIdeal, 1, "도")} / ${fmt(outerIdeal, 1, "도")}`;
       document.getElementById("ackermann").textContent = fmt(ackermann, 1, "%");
+      document.getElementById("steeringRatio").textContent = fmt(steeringRatio, 1, ":1");
+      document.getElementById("minTurningRadius").textContent = fmt(minTurningRadius / 1000, 2, " m");
+      document.getElementById("ackermannError").textContent = `Ackermann error ${fmt(ackermannError, 1, "%")}`;
       const ackMetric = document.getElementById("ackMetric");
       ackMetric.className = "metric " + (ackermann >= 80 && ackermann <= 120 ? "good" : ackermann >= 50 && ackermann <= 150 ? "warn" : "bad");
 
@@ -1455,7 +1644,12 @@
         ["입력 내륜각 / 외륜각", `${fmt(innerMeasured, 2, "도")} / ${fmt(outerMeasured, 2, "도")}`, "실측값 또는 별도 지오메트리 해석값"],
         ["Ackermann 비율", fmt(ackermann, 1, "%"), "100%에 가까울수록 이상 Ackermann"],
         ["랙 기반 단순 조향각", fmt(rackAngle, 2, "도"), "asin(랙 이동량 / 타이로드 길이)"],
-        ["랙 Y 오프셋", fmt(rackOffsetEffect, 1, "% 반트랙"), "반트랙 대비 중앙 오프셋"]
+        ["랙 Y 오프셋", fmt(rackOffsetEffect, 1, "% 반트랙"), "반트랙 대비 중앙 오프셋"],
+        ["Steering ratio", fmt(steeringRatio, 2, ":1"), "스티어링휠 각도 / 대표 로드휠 각도"],
+        ["피니언 기반 랙 이동", fmt(pinionRackTravelM, 4, " m"), "스티어링휠 각도 × 피니언 반경"],
+        ["Lock-to-lock", fmt(lockToLockDeg, 1, "도"), "현재 랙 최대 이동 기준 handwheel 총 회전각"],
+        ["최소 회전반경", fmt(minTurningRadius / 1000, 3, " m"), "내륜각 기준, 차량 중심 근사"],
+        ["Ackermann error", fmt(ackermannError, 1, "%"), "100%에서 벗어난 정도"]
       ]);
       updateSteeringHardpointSolver();
     }
@@ -1524,9 +1718,9 @@
       const innerAngle = leftAbs >= rightAbs ? leftAbs : rightAbs;
       const outerAngle = leftAbs >= rightAbs ? rightAbs : leftAbs;
       const ackBase = model.track / Math.max(n("wheelbase"), 1);
-      const ack = innerAngle > 0.1 && outerAngle > 0.1
+      const ack = innerAngle > 2 && outerAngle > 2
         ? (cot(outerAngle) - cot(innerAngle)) / ackBase * 100
-        : 0;
+        : Number.NaN;
       return { travel, leftAngle, rightAngle, innerAngle, outerAngle, ackermann: ack };
     }
 
@@ -1549,7 +1743,7 @@
     function updateSteeringHardpointSolver() {
       const rows = steeringSweep();
       const maxInner = Math.max(...rows.map((row) => row.innerAngle));
-      const usefulAck = rows.filter((row) => row.innerAngle > 1 && row.outerAngle > 1).map((row) => row.ackermann);
+      const usefulAck = rows.filter((row) => row.innerAngle > 2 && row.outerAngle > 2 && Number.isFinite(row.ackermann)).map((row) => row.ackermann);
       const maxAck = usefulAck.length ? Math.max(...usefulAck) : 0;
       document.getElementById("steerMaxInner").textContent = fmt(maxInner, 2, "도");
       document.getElementById("steerMaxAck").textContent = fmt(maxAck, 1, "%");
@@ -1559,7 +1753,7 @@
         fmt(row.rightAngle, 2, "도"),
         fmt(row.innerAngle, 2, "도"),
         fmt(row.outerAngle, 2, "도"),
-        fmt(row.ackermann, 1, "%")
+        Number.isFinite(row.ackermann) ? fmt(row.ackermann, 1, "%") : "계산 불안정"
       ]));
       drawSteeringCurves(rows);
     }
@@ -1684,7 +1878,7 @@
         return {
           label: "낮음",
           className: "",
-          detail: "재킹을 낮게 유지하면서 롤센터가 지면 위에 있습니다. Baja 초기값으로 무난한 범위입니다."
+          detail: "재킹을 낮게 유지하면서 롤센터가 지면 위에 있습니다. Formula 초기 설계에서 무난하게 검토할 수 있는 범위입니다."
         };
       }
       if (rollCenter < 100) {
@@ -1777,6 +1971,65 @@
 
     function dist3(a, b) {
       return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+
+    function unit3(from, to) {
+      const length = Math.max(dist3(from, to), 1e-9);
+      return {
+        x: (to.x - from.x) / length,
+        y: (to.y - from.y) / length,
+        z: (to.z - from.z) / length
+      };
+    }
+
+    function solveLinearSystem(matrix, vector) {
+      const nSize = vector.length;
+      const a = matrix.map((row, i) => [...row, vector[i]]);
+      for (let col = 0; col < nSize; col += 1) {
+        let pivot = col;
+        for (let row = col + 1; row < nSize; row += 1) {
+          if (Math.abs(a[row][col]) > Math.abs(a[pivot][col])) pivot = row;
+        }
+        [a[col], a[pivot]] = [a[pivot], a[col]];
+        const div = Math.abs(a[col][col]) < 1e-9 ? 1e-9 : a[col][col];
+        for (let c = col; c <= nSize; c += 1) a[col][c] /= div;
+        for (let row = 0; row < nSize; row += 1) {
+          if (row === col) continue;
+          const factor = a[row][col];
+          for (let c = col; c <= nSize; c += 1) a[row][c] -= factor * a[col][c];
+        }
+      }
+      return a.map((row) => row[nSize]);
+    }
+
+    function solveLinkLoads3d(externalForce) {
+      const model = getHardpointModel();
+      const shockWheel = p3("hpShockWheel");
+      const links = [
+        { name: "UBJ", unit: unit3(model.wc, model.ubj) },
+        { name: "LBJ", unit: unit3(model.wc, model.lbj) },
+        { name: "Tie rod", unit: unit3(model.outerTieRod, model.innerTieRod) },
+        { name: "Pushrod", unit: unit3(shockWheel, model.shockBody) }
+      ];
+      const lambda = 1e-6;
+      const ata = links.map((a, i) => links.map((b, j) => (
+        a.unit.x * b.unit.x + a.unit.y * b.unit.y + a.unit.z * b.unit.z + (i === j ? lambda : 0)
+      )));
+      const atb = links.map((link) => -(
+        link.unit.x * externalForce.x + link.unit.y * externalForce.y + link.unit.z * externalForce.z
+      ));
+      const solution = solveLinearSystem(ata, atb);
+      return {
+        ubj: solution[0],
+        lbj: solution[1],
+        tieRod: solution[2],
+        pushrod: solution[3],
+        residual: Math.hypot(
+          externalForce.x + links.reduce((sum, link, i) => sum + solution[i] * link.unit.x, 0),
+          externalForce.y + links.reduce((sum, link, i) => sum + solution[i] * link.unit.y, 0),
+          externalForce.z + links.reduce((sum, link, i) => sum + solution[i] * link.unit.z, 0)
+        )
+      };
     }
 
     function dist2(a, b) {
@@ -1934,8 +2187,8 @@
 
     function updateHardpointSuspension() {
       const rows = hardpointSweep();
-      const springRate = Math.max(n("hpSpringRate"), 0);
-      const tireRate = Math.max(n("hpTireRate"), 0);
+      const springRate = Math.max(n("hpSpringRate"), 0) * 1000;
+      const tireRate = Math.max(n("hpTireRate"), 0) * 1000;
       rows.forEach((row) => {
         row.wheelRate = springRate * row.motionRatio * row.motionRatio;
         row.rideRate = tireRate > 0 && row.wheelRate > 0
@@ -1945,23 +2198,29 @@
       const staticRow = rows.find((row) => Math.abs(row.travel) < 0.001) || rows[0];
       const positiveRows = rows.filter((row) => row.travel > 0);
       const bumpRow = positiveRows[positiveRows.length - 1] || rows[rows.length - 1];
-      const camberGain = (bumpRow.camber - staticRow.camber) / Math.max(Math.abs(bumpRow.travel - staticRow.travel), 1) * 25.4;
+      const camberGain = (bumpRow.camber - staticRow.camber) / Math.max(Math.abs(bumpRow.travel - staticRow.travel), 1) * 1000;
       const rcValues = rows.map((row) => row.rollCenter).filter(Number.isFinite);
       const rcMin = Math.min(...rcValues);
       const rcMax = Math.max(...rcValues);
       const toeValues = rows.map((row) => row.toeChange).filter(Number.isFinite);
       const toeMin = Math.min(...toeValues);
       const toeMax = Math.max(...toeValues);
+      const maxToeAbs = Math.max(Math.abs(toeMin), Math.abs(toeMax));
+      const bumpToe = bumpRow.toeChange;
+      const toeDirection = bumpToe > 0.05 ? "범프 시 Toe-out 증가" : bumpToe < -0.05 ? "범프 시 Toe-in 증가" : "범프 시 토 변화 작음";
       const trackValues = rows.map((row) => row.trackChange).filter(Number.isFinite);
       const trackMin = Math.min(...trackValues);
       const trackMax = Math.max(...trackValues);
+      const trackPer25 = (bumpRow.trackChange - staticRow.trackChange) / Math.max(Math.abs(bumpRow.travel - staticRow.travel), 1) * 25;
+      const trackGrade = Math.abs(trackPer25) > 8 ? "과도함" : Math.abs(trackPer25) > 3 ? "적정" : "작음";
 
-      document.getElementById("hpCamberGain").textContent = fmt(camberGain, 2, "도/in");
+      document.getElementById("hpCamberGain").textContent = fmt(camberGain, 2, "도/m");
       document.getElementById("hpRcRange").textContent = `${fmt(rcMin, 0)} ~ ${fmt(rcMax, 0)} mm`;
-      document.getElementById("hpBumpSteer").textContent = `${fmt(toeMin, 2)} ~ ${fmt(toeMax, 2)}도`;
-      document.getElementById("hpTrackRange").textContent = `${fmt(trackMin, 1)} ~ ${fmt(trackMax, 1)} mm`;
-      document.getElementById("hpWheelRate").textContent = fmt(staticRow.wheelRate, 1, " lb/in");
-      document.getElementById("hpRideRate").textContent = fmt(staticRow.rideRate, 1, " lb/in");
+      document.getElementById("hpBumpSteer").textContent = `max ${fmt(maxToeAbs, 2, "도")}`;
+      document.getElementById("hpToeDirection").textContent = toeDirection;
+      document.getElementById("hpTrackRange").textContent = `${fmt(trackPer25, 1, " mm/25mm")} ${trackGrade}`;
+      document.getElementById("hpWheelRate").textContent = fmt(staticRow.wheelRate / 1000, 2, " N/mm");
+      document.getElementById("hpRideRate").textContent = fmt(staticRow.rideRate / 1000, 2, " N/mm");
 
       setRows("hpSweepTable", rows.map((row) => [
         fmt(row.travel, 0, " mm"),
@@ -1970,12 +2229,166 @@
         fmt(row.trackChange, 1, " mm"),
         fmt(row.toeChange, 2, "도"),
         fmt(row.motionRatio, 3),
-        fmt(row.wheelRate, 1),
-        fmt(row.rideRate, 1)
+        fmt(row.wheelRate / 1000, 2),
+        fmt(row.rideRate / 1000, 2)
       ]));
 
       drawHardpointCurves(rows);
       drawToeCurve(rows);
+    }
+
+    function rideFrequency(cornerWeightN, wheelRateNm, unsprungKg) {
+      const cornerMass = cornerWeightN / G;
+      const sprungCornerMass = Math.max(cornerMass - unsprungKg, 0.1);
+      return 1 / (2 * Math.PI) * Math.sqrt(Math.max(wheelRateNm, 0) / sprungCornerMass);
+    }
+
+    function springRollResults() {
+      const frontWheelRate = Math.max(n("rfFrontWheelRate"), 0) * 1000;
+      const rearWheelRate = Math.max(n("rfRearWheelRate"), 0) * 1000;
+      const frontTrackM = Math.max(n("frontTrack") / 1000, 0.001);
+      const rearTrackM = Math.max(n("rearTrack") / 1000, 0.001);
+      const frontRoll = frontWheelRate * frontTrackM * frontTrackM / 2 + Math.max(n("rollFrontArb"), 0);
+      const rearRoll = rearWheelRate * rearTrackM * rearTrackM / 2 + Math.max(n("rollRearArb"), 0);
+      const totalRoll = frontRoll + rearRoll;
+      const dist = totalRoll > 0 ? frontRoll / totalRoll * 100 : 50;
+      const totalRollUsed = n("totalRollStiffnessOverride") > 0 ? n("totalRollStiffnessOverride") : totalRoll;
+      const mass = Math.max(n("mass"), 0);
+      const cgToRcM = Math.max(n("cgHeight") / 1000 - n("rollCenterHeight"), 0);
+      const rollGradient = totalRollUsed > 0 ? mass * G * cgToRcM / totalRollUsed * 180 / Math.PI : 0;
+      return {
+        frontFreq: rideFrequency(n("rfFrontCornerWeight"), frontWheelRate, n("rfFrontUnsprung")),
+        rearFreq: rideFrequency(n("rfRearCornerWeight"), rearWheelRate, n("rfRearUnsprung")),
+        frontRoll,
+        rearRoll,
+        totalRoll,
+        dist,
+        totalRollUsed,
+        rollGradient
+      };
+    }
+
+    function updateSpringRoll() {
+      if (!document.getElementById("frontRideFreq")) return;
+      const result = springRollResults();
+      const lltdEval = evaluateLltd(result.dist);
+      document.getElementById("frontRideFreq").textContent = fmt(result.frontFreq, 2, " Hz");
+      document.getElementById("rearRideFreq").textContent = fmt(result.rearFreq, 2, " Hz");
+      document.getElementById("rollStiffDist").textContent = fmt(result.dist, 1, "%");
+      document.getElementById("rollGradient").textContent = fmt(result.rollGradient, 2, " deg/g");
+      document.getElementById("rollDistBias").textContent = `${lltdEval.label} 성향, 하중이동 탭 LLTD 입력에 반영`;
+      document.getElementById("rollDistMetric").className = `metric ${lltdEval.className}`;
+      document.getElementById("rollFrontShare").value = result.dist.toFixed(1);
+      setRows("springRollTable", [
+        ["전륜 라이드 주파수", fmt(result.frontFreq, 3, " Hz"), "Formula 스프링 세팅 비교의 핵심 지표"],
+        ["후륜 라이드 주파수", fmt(result.rearFreq, 3, " Hz"), "후륜이 약간 높으면 응답성은 좋아지지만 트랙션 변화를 확인해야 함"],
+        ["전륜 휠레이트", fmt(n("rfFrontWheelRate"), 2, " N/mm"), "Formula 스프링 세팅 기준 입력값"],
+        ["후륜 휠레이트", fmt(n("rfRearWheelRate"), 2, " N/mm"), "Formula 스프링 세팅 기준 입력값"],
+        ["전륜 롤강성", fmt(result.frontRoll, 1, " N·m/rad"), "휠레이트와 전륜 안티롤바 합산"],
+        ["후륜 롤강성", fmt(result.rearRoll, 1, " N·m/rad"), "휠레이트와 후륜 안티롤바 합산"],
+        ["롤강성 분배", fmt(result.dist, 1, "% front"), "기존 하중이동 탭의 LLTD 입력값으로 자동 연결"],
+        ["총 롤강성", fmt(result.totalRollUsed, 1, " N·m/rad"), n("totalRollStiffnessOverride") > 0 ? "직접 입력값 사용" : "전후 롤강성 합 사용"],
+        ["롤 그래디언트", fmt(result.rollGradient, 3, " deg/g"), "값이 작을수록 같은 횡가속도에서 롤이 작음"]
+      ]);
+    }
+
+    function updateForceAndBrakeCalculators() {
+      if (!document.getElementById("pushrodForce")) return;
+      const wheelLoad = Math.max(n("pfWheelLoad"), 0);
+      const mr = Math.max(n("pfMotionRatio"), 0.001);
+      const pushAngle = Math.max(Math.abs(n("pfPushrodAngle")), 1);
+      const damperAngle = Math.max(Math.abs(n("pfDamperAngle")), 0);
+      const springRate = Math.max(n("pfSpringRate"), 0.001) * 1000;
+      const pushrodForce = wheelLoad / Math.max(Math.sin(rad(pushAngle)) * mr, 0.001);
+      const damperForce = pushrodForce * Math.max(Math.cos(rad(damperAngle)), 0.001);
+      const springCompression = damperForce / springRate;
+
+      const latLoad = wheelLoad * Math.max(n("slCorneringG"), 0);
+      const brakeLoad = wheelLoad * Math.max(n("slBrakingG"), 0);
+      const combinedLoad = Math.hypot(wheelLoad, latLoad, brakeLoad) * Math.max(n("slSafetyFactor"), 1);
+      const linkLoads = solveLinkLoads3d({
+        x: -brakeLoad * Math.max(n("slSafetyFactor"), 1),
+        y: latLoad * Math.max(n("slSafetyFactor"), 1),
+        z: -wheelLoad * Math.max(n("slSafetyFactor"), 1)
+      });
+      const ubjLoad = Math.abs(linkLoads.ubj);
+      const lbjLoad = Math.abs(linkLoads.lbj);
+      const tieRodLoad = Math.abs(linkLoads.tieRod);
+      const pushrodLoad = Math.max(Math.abs(linkLoads.pushrod), pushrodForce * Math.max(n("slSafetyFactor"), 1));
+
+      const base = vehicleLoads();
+      const L = Math.max(n("wheelbase"), 1);
+      const idealFront = Math.min(Math.max((base.front + n("mass") * G * n("brakeG") * n("cgHeight") / L) / Math.max(base.weight, 1), 0), 1);
+      const frontTorque = n("brakeBalanceBarFront") * n("brakeFrontPistonArea") * n("brakeFrontDiscRadius") * n("brakeMuPad");
+      const rearTorque = (1 - n("brakeBalanceBarFront")) * n("brakeRearPistonArea") * n("brakeRearDiscRadius") * n("brakeMuPad");
+      const actualFront = frontTorque + rearTorque > 0 ? frontTorque / (frontTorque + rearTorque) : 0.5;
+      const lockText = actualFront > idealFront + 0.05 ? "전륜 먼저 락업 가능" : actualFront < idealFront - 0.05 ? "후륜 먼저 락업 가능" : "이상 배분 근접";
+      const lockClass = Math.abs(actualFront - idealFront) < 0.05 ? "good" : Math.abs(actualFront - idealFront) < 0.12 ? "warn" : "bad";
+
+      document.getElementById("pushrodForce").textContent = fmt(pushrodForce, 0, " N");
+      document.getElementById("damperForce").textContent = fmt(damperForce, 0, " N");
+      document.getElementById("springCompression").textContent = fmt(springCompression * 1000, 1, " mm");
+      document.getElementById("actualBrakeBias").textContent = fmt(actualFront * 100, 1, "% front");
+      document.getElementById("brakeLock").textContent = lockText;
+      document.getElementById("brakeBiasMetric").className = `metric ${lockClass}`;
+
+      setRows("loadsTable", [
+        ["Pushrod force", fmt(pushrodForce, 1, " N"), "Wheel load / (sin(pushrod angle) × motion ratio)"],
+        ["Damper force", fmt(damperForce, 1, " N"), "푸시로드-댐퍼 각도 반영"],
+        ["Spring compression", fmt(springCompression * 1000, 2, " mm"), "Damper force / spring rate"],
+        ["Upper ball joint load", fmt(ubjLoad, 1, " N"), "하드포인트 좌표 기반 최소제곱 축력"],
+        ["Lower ball joint load", fmt(lbjLoad, 1, " N"), "하드포인트 좌표 기반 최소제곱 축력"],
+        ["Tie rod load", fmt(tieRodLoad, 1, " N"), "Inner/Outer tie rod 좌표 기반 축력"],
+        ["Pushrod design load", fmt(pushrodLoad, 1, " N"), "좌표 기반 축력과 모션비 기반 하중 중 큰 값"],
+        ["좌표 solver 잔차", fmt(linkLoads.residual, 1, " N"), "값이 크면 링크 방향만으로 외력을 충분히 지지하지 못하는 형상"],
+        ["이상 제동 배분", fmt(idealFront * 100, 1, "% front"), "정적하중 + 제동 하중이동 기준"],
+        ["실제 제동 배분", fmt(actualFront * 100, 1, "% front"), "캘리퍼 면적, 디스크 반경, 밸런스바 기준"],
+        ["락업 예상", lockText, "실제 배분이 이상 배분보다 큰 축이 먼저 잠길 가능성"]
+      ]);
+    }
+
+    function updateMassPackaging() {
+      if (!document.getElementById("unsprungMass")) return;
+      const cornerUnsprung = Math.max(n("umWheelTire") + n("umKnuckleHub") + n("umBrake") + n("umArmShare"), 0);
+      const totalUnsprung = cornerUnsprung * 4;
+      const totalMass = Math.max(n("mass"), 0);
+      const sprung = Math.max(totalMass - totalUnsprung, 0);
+      const parts = cgResult();
+      const iz = parts.parts.reduce((sum, part) => {
+        const dx = (part.x - parts.x) / 1000;
+        const dy = (part.y - parts.y) / 1000;
+        return sum + part.mass * (dx * dx + dy * dy);
+      }, 0);
+      const concentration = iz / Math.max(totalMass, 1);
+      const frameAtBump = n("packFrameBottomHeight") - n("packBumpTravel");
+      const damperUse = (n("packBumpTravel") + n("packDroopTravel")) * Math.max(n("pfMotionRatio"), 0) / Math.max(n("packDamperStroke"), 0.001) * 100;
+      const packOk = frameAtBump > 0.03 && damperUse <= 95;
+      const packWarn = frameAtBump > 0 && damperUse <= 105;
+      const trackM = Math.max(n("frontTrack") / 1000, 0.001);
+      const rollAngle = n("rollAngleInput");
+      const rollTravel = Math.tan(rad(rollAngle)) * trackM / 2;
+      const staticCamber = n("k3StaticCamber");
+      const camberGain = n("camberGainPerM");
+      const outsideCamber = staticCamber + camberGain * rollTravel + rollAngle;
+      const insideCamber = staticCamber - camberGain * rollTravel - rollAngle;
+
+      document.getElementById("unsprungMass").textContent = `${fmt(cornerUnsprung, 1)} / ${fmt(totalUnsprung, 1)} kg`;
+      document.getElementById("sprungMass").textContent = fmt(sprung, 1, " kg");
+      document.getElementById("yawInertia").textContent = fmt(iz, 2, " kg·m²");
+      document.getElementById("packStatus").textContent = packOk ? "통과" : packWarn ? "주의" : "간섭 위험";
+      document.getElementById("packUsage").textContent = `댐퍼 사용률 ${fmt(damperUse, 1, "%")}`;
+      document.getElementById("packMetric").className = `metric ${packOk ? "good" : packWarn ? "warn" : "bad"}`;
+
+      setRows("massPackTable", [
+        ["코너 언스프렁 질량", fmt(cornerUnsprung, 2, " kg"), "휠/타이어+허브/너클+브레이크+암 일부"],
+        ["코너 스프렁 질량", fmt(sprung / 4, 2, " kg"), "Ride frequency 계산에 사용"],
+        ["Yaw moment of inertia Iz", fmt(iz, 3, " kg·m²"), concentration < 0.45 ? "질량 집중도 높음" : concentration < 0.8 ? "보통" : "질량이 멀리 퍼짐"],
+        ["범프 시 프레임 최저점", fmt(frameAtBump, 3, " m"), frameAtBump > 0.03 ? "여유 있음" : frameAtBump > 0 ? "지면 간섭 여유 작음" : "바닥 간섭"],
+        ["드룹 확보량", fmt(n("packDroopTravel"), 3, " m"), "리바운드 스트로크 확보량"],
+        ["댐퍼 스트로크 사용률", fmt(damperUse, 1, "%"), damperUse <= 95 ? "적정" : "스트로크 부족 가능"],
+        ["바깥쪽 타이어 캠버", fmt(outsideCamber, 2, "도"), "Static camber + camber gain + body roll"],
+        ["안쪽 타이어 캠버", fmt(insideCamber, 2, "도"), "반대 방향 휠 트래블 가정"]
+      ]);
     }
 
     function drawHardpointCurves(rows) {
@@ -2284,9 +2697,9 @@
     function scrubGrade(scrub) {
       const value = Math.abs(scrub);
       if (value < 20) return { label: "작음", className: "good" };
-      if (value < 60) return { label: "보통", className: "" };
-      if (value < 100) return { label: "큼", className: "warn" };
-      return { label: "매우 큼", className: "bad" };
+      if (value < 60) return { label: "적정", className: "" };
+      if (value < 100) return { label: "과도함", className: "warn" };
+      return { label: "매우 과도함", className: "bad" };
     }
 
     function updateKinematics3d() {
@@ -2437,10 +2850,13 @@
     function updateAll() {
       updateCgCalculator();
       updateVehicle();
+      updateSpringRoll();
       updateLoadTransfer();
       updateSteering();
       updateSuspension();
       updateHardpointSuspension();
+      updateForceAndBrakeCalculators();
+      updateMassPackaging();
       updateAntiGeometry();
       updateKinematics3d();
     }
