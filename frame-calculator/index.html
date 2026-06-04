@@ -497,7 +497,7 @@
               <div class="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>부품</th><th>질량 kg</th><th>X mm</th><th>Y mm</th><th>Z mm</th><th>삭제</th></tr>
+                    <tr><th>부품</th><th>질량 kg</th><th>X mm</th><th>Y mm</th><th>Z mm</th><th>Unsprung</th><th>삭제</th></tr>
                   </thead>
                   <tbody id="cgPartRows">
                     <tr>
@@ -506,6 +506,7 @@
                       <td><input class="compact-input cg-part-x" type="number" value="1200" step="1"></td>
                       <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
                       <td><input class="compact-input cg-part-z" type="number" value="250" step="1"></td>
+                      <td><input class="cg-part-unsprung" type="checkbox"></td>
                       <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
                     </tr>
                     <tr>
@@ -514,6 +515,7 @@
                       <td><input class="compact-input cg-part-x" type="number" value="900" step="1"></td>
                       <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
                       <td><input class="compact-input cg-part-z" type="number" value="180" step="1"></td>
+                      <td><input class="cg-part-unsprung" type="checkbox"></td>
                       <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
                     </tr>
                     <tr>
@@ -522,6 +524,7 @@
                       <td><input class="compact-input cg-part-x" type="number" value="800" step="1"></td>
                       <td><input class="compact-input cg-part-y" type="number" value="0" step="1"></td>
                       <td><input class="compact-input cg-part-z" type="number" value="500" step="1"></td>
+                      <td><input class="cg-part-unsprung" type="checkbox"></td>
                       <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
                     </tr>
                   </tbody>
@@ -550,6 +553,11 @@
                   <span>전체 CG</span>
                   <strong id="cgVector">-</strong>
                   <span>X / Y / Z</span>
+                </div>
+                <div class="metric">
+                  <span>Sprung / Unsprung</span>
+                  <strong id="cgMassSplit">-</strong>
+                  <span>체크박스 기준</span>
                 </div>
               </div>
               <div class="table-wrap">
@@ -664,6 +672,10 @@
                 <label for="rollFrontShare">전륜 롤강성 배분 %</label>
                 <input id="rollFrontShare" data-key="rollFrontShare" type="number" value="55" step="1">
               </div>
+              <div class="field">
+                <label for="loadRollCenterHeight">롤센터 높이 mm</label>
+                <input id="loadRollCenterHeight" data-key="loadRollCenterHeight" type="number" value="50" step="1">
+              </div>
             </div>
           </div>
           <div class="panel">
@@ -702,7 +714,7 @@
                   <tbody id="loadTable"></tbody>
                 </table>
               </div>
-              <p class="explain">종방향 하중이동은 m*a*h/L, 횡방향 하중이동은 m*ay*h/t를 사용합니다. 현재 표의 좌우 증감은 좌측이 바깥쪽인 선회 예시이며, 실제 방향은 선회 방향에 따라 반대가 됩니다.</p>
+              <p class="explain">종방향 하중이동은 m*a*h/L, 횡방향 총 하중이동은 m*ay*h/t를 사용합니다. 횡하중이동은 롤센터 높이를 이용해 geometric transfer와 elastic transfer로 1차 분리합니다.</p>
             </div>
           </div>
         </section>
@@ -945,7 +957,7 @@
             </div>
             <div class="form">
               <div class="field wide">
-                <div class="status warn">3D 입력 + 2D 투영 스윕: 좌표는 3D지만 암 운동은 정면 Y-Z 투영 기반입니다.</div>
+                <div class="status">3D Constraint Solver: UBJ/LBJ/WC/OTR/댐퍼 휠측점을 하나의 rigid upright로 묶고, 어퍼/로어암 및 타이로드 길이 구속을 동시에 만족하도록 범프 자세를 반복 계산합니다.</div>
               </div>
               <div class="field"><label for="hpUFIx">어퍼 전방 차체 X</label><input id="hpUFIx" data-key="hpUFIx" type="number" value="-280" step="1"></div>
               <div class="field"><label for="hpUFIy">어퍼 전방 차체 Y</label><input id="hpUFIy" data-key="hpUFIy" type="number" value="255" step="1"></div>
@@ -1032,7 +1044,7 @@
               <div class="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>휠 트래블</th><th>캠버</th><th>롤센터 Z</th><th>트랙 변화</th><th>토 변화</th><th>모션비</th><th>휠레이트</th><th>라이드레이트</th></tr>
+                    <tr><th>휠 트래블</th><th>캠버</th><th>롤센터 Z</th><th>트랙 변화</th><th>토 변화</th><th>모션비</th><th>휠레이트</th><th>라이드레이트</th><th>Solver RMS</th></tr>
                   </thead>
                   <tbody id="hpSweepTable"></tbody>
                 </table>
@@ -1041,7 +1053,7 @@
                 <canvas id="hpCurveCanvas" width="900" height="506" aria-label="하드포인트 스윕 곡선"></canvas>
                 <canvas id="hpToeCanvas" width="900" height="320" aria-label="Toe vs Wheel Travel 그래프"></canvas>
               </div>
-              <div class="status warn">현재 버전은 3D 좌표와 타이로드 길이 구속을 사용하지만, 암 운동은 정면 Y-Z 투영 기반입니다. 실제 3D 멀티바디 solver 전 단계의 설계 검토용 1차 해석입니다.</div>
+              <div class="status" id="hpSolverStatus">Rigid upright 3D solver 결과가 여기에 표시됩니다.</div>
             </div>
           </div>
         </section>
@@ -1064,7 +1076,9 @@
               <div class="field"><label for="rfRearUnsprung">후륜 언스프렁 질량 kg/코너</label><input id="rfRearUnsprung" data-key="rfRearUnsprung" type="number" value="16" step="0.1"></div>
               <div class="field"><label for="rollFrontArb">전륜 안티롤바 강성 N·m/rad</label><input id="rollFrontArb" data-key="rollFrontArb" type="number" value="80" step="1"></div>
               <div class="field"><label for="rollRearArb">후륜 안티롤바 강성 N·m/rad</label><input id="rollRearArb" data-key="rollRearArb" type="number" value="60" step="1"></div>
-              <div class="field"><label for="rollCenterHeight">롤센터 높이 m</label><input id="rollCenterHeight" data-key="rollCenterHeight" type="number" value="0.05" step="0.005"></div>
+              <div class="field"><label for="rollCenterHeight">전륜 롤센터 높이 m</label><input id="rollCenterHeight" data-key="rollCenterHeight" type="number" value="0.05" step="0.005"></div>
+              <div class="field"><label for="rearRollCenterHeight">후륜 롤센터 높이 m</label><input id="rearRollCenterHeight" data-key="rearRollCenterHeight" type="number" value="0.06" step="0.005"></div>
+              <div class="field"><label for="pitchInertiaIy">Pitch inertia Iy kg·m²</label><input id="pitchInertiaIy" data-key="pitchInertiaIy" type="number" value="130" step="1"></div>
               <div class="field"><label for="totalRollStiffnessOverride">총 롤강성 직접 입력 N·m/rad, 0=자동</label><input id="totalRollStiffnessOverride" data-key="totalRollStiffnessOverride" type="number" value="0" step="1"></div>
             </div>
           </div>
@@ -1077,6 +1091,7 @@
               <div class="hero-result">
                 <div class="metric"><span>Front Ride Frequency</span><strong id="frontRideFreq">-</strong><span>sprung mass 기준</span></div>
                 <div class="metric"><span>Rear Ride Frequency</span><strong id="rearRideFreq">-</strong><span>sprung mass 기준</span></div>
+                <div class="metric"><span>Pitch Frequency</span><strong id="pitchFreq">-</strong><span>front/rear ride rate 기반</span></div>
                 <div class="metric" id="rollDistMetric"><span>Roll Stiffness Distribution</span><strong id="rollStiffDist">-</strong><span id="rollDistBias">LLTD 연동</span></div>
                 <div class="metric"><span>Roll Gradient</span><strong id="rollGradient">-</strong><span>deg/g</span></div>
               </div>
@@ -1106,6 +1121,15 @@
               <div class="field"><label for="pfPushrodAngle">푸시로드 각도 deg, 하중방향 기준</label><input id="pfPushrodAngle" data-key="pfPushrodAngle" type="number" value="35" step="1"></div>
               <div class="field"><label for="pfDamperAngle">댐퍼 각도 deg, 푸시로드 기준</label><input id="pfDamperAngle" data-key="pfDamperAngle" type="number" value="15" step="1"></div>
               <div class="field"><label for="pfSpringRate">스프링 레이트 N/mm</label><input id="pfSpringRate" data-key="pfSpringRate" type="number" value="30" step="0.5"></div>
+              <div class="field"><label for="bcPivotX">벨크랭크 피벗 X mm</label><input id="bcPivotX" data-key="bcPivotX" type="number" value="130" step="1"></div>
+              <div class="field"><label for="bcPivotY">벨크랭크 피벗 Y mm</label><input id="bcPivotY" data-key="bcPivotY" type="number" value="300" step="1"></div>
+              <div class="field"><label for="bcPivotZ">벨크랭크 피벗 Z mm</label><input id="bcPivotZ" data-key="bcPivotZ" type="number" value="470" step="1"></div>
+              <div class="field"><label for="bcPushX">벨크랭크 푸시로드점 X mm</label><input id="bcPushX" data-key="bcPushX" type="number" value="105" step="1"></div>
+              <div class="field"><label for="bcPushY">벨크랭크 푸시로드점 Y mm</label><input id="bcPushY" data-key="bcPushY" type="number" value="350" step="1"></div>
+              <div class="field"><label for="bcPushZ">벨크랭크 푸시로드점 Z mm</label><input id="bcPushZ" data-key="bcPushZ" type="number" value="445" step="1"></div>
+              <div class="field"><label for="bcDamperX">벨크랭크 댐퍼점 X mm</label><input id="bcDamperX" data-key="bcDamperX" type="number" value="165" step="1"></div>
+              <div class="field"><label for="bcDamperY">벨크랭크 댐퍼점 Y mm</label><input id="bcDamperY" data-key="bcDamperY" type="number" value="285" step="1"></div>
+              <div class="field"><label for="bcDamperZ">벨크랭크 댐퍼점 Z mm</label><input id="bcDamperZ" data-key="bcDamperZ" type="number" value="520" step="1"></div>
               <div class="field"><label for="slCorneringG">코너링 g</label><input id="slCorneringG" data-key="slCorneringG" type="number" value="1.2" step="0.05"></div>
               <div class="field"><label for="slBrakingG">제동 g</label><input id="slBrakingG" data-key="slBrakingG" type="number" value="0.8" step="0.05"></div>
               <div class="field"><label for="slSafetyFactor">하중 안전계수</label><input id="slSafetyFactor" data-key="slSafetyFactor" type="number" value="1.5" step="0.1"></div>
@@ -1126,6 +1150,7 @@
               <div class="hero-result">
                 <div class="metric"><span>Pushrod Force</span><strong id="pushrodForce">-</strong><span>브라켓 축하중 추정</span></div>
                 <div class="metric"><span>Damper Force</span><strong id="damperForce">-</strong><span>댐퍼/스프링 축하중</span></div>
+                <div class="metric"><span>Bellcrank Ratio</span><strong id="bellcrankRatio">-</strong><span>push arm / damper arm</span></div>
                 <div class="metric"><span>Spring Compression</span><strong id="springCompression">-</strong><span>정적 압축량</span></div>
                 <div class="metric" id="brakeBiasMetric"><span>Brake Bias</span><strong id="actualBrakeBias">-</strong><span id="brakeLock">락업 예상</span></div>
               </div>
@@ -1202,22 +1227,33 @@
                 <label for="antiRearDrive">후륜 구동 배분 %</label>
                 <input id="antiRearDrive" data-key="antiRearDrive" type="number" value="100" step="1">
               </div>
-              <div class="field"><label for="antiFUInX">전륜 어퍼 차체 X</label><input id="antiFUInX" data-key="antiFUInX" type="number" value="-400" step="1"></div>
-              <div class="field"><label for="antiFUInZ">전륜 어퍼 차체 Z</label><input id="antiFUInZ" data-key="antiFUInZ" type="number" value="410" step="1"></div>
-              <div class="field"><label for="antiFUOutX">전륜 어퍼 휠측 X</label><input id="antiFUOutX" data-key="antiFUOutX" type="number" value="30" step="1"></div>
-              <div class="field"><label for="antiFUOutZ">전륜 어퍼 휠측 Z</label><input id="antiFUOutZ" data-key="antiFUOutZ" type="number" value="390" step="1"></div>
-              <div class="field"><label for="antiFLInX">전륜 로어 차체 X</label><input id="antiFLInX" data-key="antiFLInX" type="number" value="-400" step="1"></div>
-              <div class="field"><label for="antiFLInZ">전륜 로어 차체 Z</label><input id="antiFLInZ" data-key="antiFLInZ" type="number" value="195" step="1"></div>
-              <div class="field"><label for="antiFLOutX">전륜 로어 휠측 X</label><input id="antiFLOutX" data-key="antiFLOutX" type="number" value="0" step="1"></div>
-              <div class="field"><label for="antiFLOutZ">전륜 로어 휠측 Z</label><input id="antiFLOutZ" data-key="antiFLOutZ" type="number" value="205" step="1"></div>
-              <div class="field"><label for="antiRUInX">후륜 어퍼 차체 X</label><input id="antiRUInX" data-key="antiRUInX" type="number" value="2000" step="1"></div>
-              <div class="field"><label for="antiRUInZ">후륜 어퍼 차체 Z</label><input id="antiRUInZ" data-key="antiRUInZ" type="number" value="385" step="1"></div>
-              <div class="field"><label for="antiRUOutX">후륜 어퍼 휠측 X</label><input id="antiRUOutX" data-key="antiRUOutX" type="number" value="1570" step="1"></div>
-              <div class="field"><label for="antiRUOutZ">후륜 어퍼 휠측 Z</label><input id="antiRUOutZ" data-key="antiRUOutZ" type="number" value="390" step="1"></div>
-              <div class="field"><label for="antiRLInX">후륜 로어 차체 X</label><input id="antiRLInX" data-key="antiRLInX" type="number" value="2000" step="1"></div>
-              <div class="field"><label for="antiRLInZ">후륜 로어 차체 Z</label><input id="antiRLInZ" data-key="antiRLInZ" type="number" value="215" step="1"></div>
-              <div class="field"><label for="antiRLOutX">후륜 로어 휠측 X</label><input id="antiRLOutX" data-key="antiRLOutX" type="number" value="1600" step="1"></div>
-              <div class="field"><label for="antiRLOutZ">후륜 로어 휠측 Z</label><input id="antiRLOutZ" data-key="antiRLOutZ" type="number" value="205" step="1"></div>
+              <div class="field wide">
+                <button class="action-btn secondary" id="syncAntiFromHpBtn" type="button">전륜 하드포인트에서 Anti Geometry 입력 반영</button>
+              </div>
+              <div class="field"><label for="antiFUFIx">전륜 UFI X</label><input id="antiFUFIx" data-key="antiFUFIx" type="number" value="-280" step="1"></div>
+              <div class="field"><label for="antiFUFIz">전륜 UFI Z</label><input id="antiFUFIz" data-key="antiFUFIz" type="number" value="430" step="1"></div>
+              <div class="field"><label for="antiFURIx">전륜 URI X</label><input id="antiFURIx" data-key="antiFURIx" type="number" value="280" step="1"></div>
+              <div class="field"><label for="antiFURIz">전륜 URI Z</label><input id="antiFURIz" data-key="antiFURIz" type="number" value="430" step="1"></div>
+              <div class="field"><label for="antiFUBJx">전륜 UBJ X</label><input id="antiFUBJx" data-key="antiFUBJx" type="number" value="20" step="1"></div>
+              <div class="field"><label for="antiFUBJz">전륜 UBJ Z</label><input id="antiFUBJz" data-key="antiFUBJz" type="number" value="390" step="1"></div>
+              <div class="field"><label for="antiFLFIx">전륜 LFI X</label><input id="antiFLFIx" data-key="antiFLFIx" type="number" value="-310" step="1"></div>
+              <div class="field"><label for="antiFLFIz">전륜 LFI Z</label><input id="antiFLFIz" data-key="antiFLFIz" type="number" value="185" step="1"></div>
+              <div class="field"><label for="antiFLRIx">전륜 LRI X</label><input id="antiFLRIx" data-key="antiFLRIx" type="number" value="310" step="1"></div>
+              <div class="field"><label for="antiFLRIz">전륜 LRI Z</label><input id="antiFLRIz" data-key="antiFLRIz" type="number" value="185" step="1"></div>
+              <div class="field"><label for="antiFLBJx">전륜 LBJ X</label><input id="antiFLBJx" data-key="antiFLBJx" type="number" value="0" step="1"></div>
+              <div class="field"><label for="antiFLBJz">전륜 LBJ Z</label><input id="antiFLBJz" data-key="antiFLBJz" type="number" value="205" step="1"></div>
+              <div class="field"><label for="antiRUFIx">후륜 UFI X</label><input id="antiRUFIx" data-key="antiRUFIx" type="number" value="1320" step="1"></div>
+              <div class="field"><label for="antiRUFIz">후륜 UFI Z</label><input id="antiRUFIz" data-key="antiRUFIz" type="number" value="385" step="1"></div>
+              <div class="field"><label for="antiRURIx">후륜 URI X</label><input id="antiRURIx" data-key="antiRURIx" type="number" value="1880" step="1"></div>
+              <div class="field"><label for="antiRURIz">후륜 URI Z</label><input id="antiRURIz" data-key="antiRURIz" type="number" value="385" step="1"></div>
+              <div class="field"><label for="antiRUBJx">후륜 UBJ X</label><input id="antiRUBJx" data-key="antiRUBJx" type="number" value="1570" step="1"></div>
+              <div class="field"><label for="antiRUBJz">후륜 UBJ Z</label><input id="antiRUBJz" data-key="antiRUBJz" type="number" value="390" step="1"></div>
+              <div class="field"><label for="antiRLFIx">후륜 LFI X</label><input id="antiRLFIx" data-key="antiRLFIx" type="number" value="1300" step="1"></div>
+              <div class="field"><label for="antiRLFIz">후륜 LFI Z</label><input id="antiRLFIz" data-key="antiRLFIz" type="number" value="215" step="1"></div>
+              <div class="field"><label for="antiRLRIx">후륜 LRI X</label><input id="antiRLRIx" data-key="antiRLRIx" type="number" value="1900" step="1"></div>
+              <div class="field"><label for="antiRLRIz">후륜 LRI Z</label><input id="antiRLRIz" data-key="antiRLRIz" type="number" value="215" step="1"></div>
+              <div class="field"><label for="antiRLBJx">후륜 LBJ X</label><input id="antiRLBJx" data-key="antiRLBJx" type="number" value="1600" step="1"></div>
+              <div class="field"><label for="antiRLBJz">후륜 LBJ Z</label><input id="antiRLBJz" data-key="antiRLBJz" type="number" value="205" step="1"></div>
             </div>
           </div>
           <div class="panel">
@@ -1259,7 +1295,7 @@
               <div class="canvas-panel">
                 <canvas id="antiCanvas" width="900" height="506" aria-label="Anti Geometry 측면도"></canvas>
               </div>
-              <div class="status warn">V1.7 Anti Geometry는 측면 X-Z 투영 기반 1차 해석입니다. 실제 제동/구동력 분포, 타이어 접지력, 3D 링크 각도, 체인/드라이브라인 높이는 단순화되어 있습니다.</div>
+              <div class="status warn">Anti Geometry는 UFI/URI/UBJ와 LFI/LRI/LBJ를 X-Z 측면도에 투영한 1차 해석입니다. 실제 제동/구동력 분포, 타이어 접지력, 3D 링크 각도, 체인/드라이브라인 높이는 단순화되어 있습니다.</div>
             </div>
           </div>
         </section>
@@ -1272,7 +1308,7 @@
             </div>
             <div class="form">
               <div class="field wide">
-                <div class="status warn">조향축 계산 가능, 완전 3D 구속해석 아님: KPI, Caster, Scrub, Trail은 계산하지만 범프 스윕은 Z 이동 기반 1차 모델입니다.</div>
+                <div class="status">Rigid upright 3D solver 기반: 하드포인트 탭의 어퍼/로어암, 타이로드 길이 구속을 풀어서 KPI, Caster, Scrub, Trail, Toe/Camber sweep을 계산합니다.</div>
               </div>
               <div class="field"><label for="k3Ubjx">어퍼 볼조인트 X</label><input id="k3Ubjx" data-key="k3Ubjx" type="number" value="20" step="1"></div>
               <div class="field"><label for="k3Ubjy">어퍼 볼조인트 Y</label><input id="k3Ubjy" data-key="k3Ubjy" type="number" value="575" step="1"></div>
@@ -1339,7 +1375,7 @@
                 <canvas id="k3Canvas" width="900" height="506" aria-label="3D 얼라인먼트 시각화"></canvas>
                 <canvas id="k3CurveCanvas" width="900" height="380" aria-label="3D 얼라인먼트 스윕 그래프"></canvas>
               </div>
-              <div class="status warn">V2.0은 3D 조향축과 휠 얼라인먼트를 계산하지만, 범프 스윕은 현재 볼조인트 Z 이동 기반 1차 모델입니다. 완전한 3D 멀티링크 구속 solver는 다음 단계입니다.</div>
+              <div class="status" id="k3SolverStatus">V2.0 3D Kinematics는 하드포인트 현가 탭과 같은 rigid upright constraint solver 결과를 사용합니다.</div>
             </div>
           </div>
         </section>
@@ -1384,7 +1420,8 @@
         mass: Number(row.querySelector(".cg-part-mass").value) || 0,
         x: Number(row.querySelector(".cg-part-x").value) || 0,
         y: Number(row.querySelector(".cg-part-y").value) || 0,
-        z: Number(row.querySelector(".cg-part-z").value) || 0
+        z: Number(row.querySelector(".cg-part-z").value) || 0,
+        unsprung: Boolean(row.querySelector(".cg-part-unsprung")?.checked)
       })).filter((part) => part.mass > 0);
     }
 
@@ -1392,11 +1429,14 @@
       const parts = cgParts();
       const totalMass = parts.reduce((sum, part) => sum + part.mass, 0);
       if (totalMass <= 0) {
-        return { parts, totalMass: 0, x: 0, y: 0, z: 0 };
+        return { parts, totalMass: 0, sprungMass: 0, unsprungMass: 0, x: 0, y: 0, z: 0 };
       }
+      const unsprungMass = parts.reduce((sum, part) => sum + (part.unsprung ? part.mass : 0), 0);
       return {
         parts,
         totalMass,
+        sprungMass: totalMass - unsprungMass,
+        unsprungMass,
         x: parts.reduce((sum, part) => sum + part.mass * part.x, 0) / totalMass,
         y: parts.reduce((sum, part) => sum + part.mass * part.y, 0) / totalMass,
         z: parts.reduce((sum, part) => sum + part.mass * part.z, 0) / totalMass
@@ -1416,6 +1456,7 @@
         <td><input class="compact-input cg-part-x" type="number" value="${part.x}" step="1"></td>
         <td><input class="compact-input cg-part-y" type="number" value="${part.y}" step="1"></td>
         <td><input class="compact-input cg-part-z" type="number" value="${part.z}" step="1"></td>
+        <td><input class="cg-part-unsprung" type="checkbox" ${part.unsprung ? "checked" : ""}></td>
         <td><button class="action-btn secondary cg-remove" type="button">삭제</button></td>
       `;
       tbody.appendChild(row);
@@ -1425,8 +1466,11 @@
       const result = cgResult();
       document.getElementById("cgTotalMass").textContent = fmt(result.totalMass, 1, " kg");
       document.getElementById("cgVector").textContent = `${fmt(result.x, 0)} / ${fmt(result.y, 0)} / ${fmt(result.z, 0)} mm`;
+      document.getElementById("cgMassSplit").textContent = `${fmt(result.sprungMass, 1)} / ${fmt(result.unsprungMass, 1)} kg`;
       setRows("cgResultTable", [
         ["총 질량", fmt(result.totalMass, 2, " kg"), "차량 질량"],
+        ["Sprung mass", fmt(result.sprungMass, 2, " kg"), "Unsprung 체크가 꺼진 부품 합계"],
+        ["Unsprung mass", fmt(result.unsprungMass, 2, " kg"), "Unsprung 체크가 켜진 부품 합계"],
         ["CG X", fmt(result.x, 1, " mm"), "CG X"],
         ["CG Y", fmt(result.y, 1, " mm"), "CG Y"],
         ["CG Z", fmt(result.z, 1, " mm"), "CG 높이"]
@@ -1518,9 +1562,9 @@
     function resetCgParts() {
       document.getElementById("cgPartRows").innerHTML = "";
       [
-        { name: "모터", mass: 15, x: 1200, y: 0, z: 250 },
-        { name: "배터리", mass: 20, x: 900, y: 0, z: 180 },
-        { name: "드라이버", mass: 75, x: 800, y: 0, z: 500 }
+        { name: "모터", mass: 15, x: 1200, y: 0, z: 250, unsprung: false },
+        { name: "배터리", mass: 20, x: 900, y: 0, z: 180, unsprung: false },
+        { name: "드라이버", mass: 75, x: 800, y: 0, z: 500, unsprung: false }
       ].forEach(addCgPart);
     }
 
@@ -1573,10 +1617,13 @@
       const brake = n("brakeG");
       const lat = n("latG");
       const frontRoll = Math.min(Math.max(n("rollFrontShare") / 100, 0), 1);
+      const rcHeight = Math.min(Math.max(n("loadRollCenterHeight"), 0), h);
 
       const accelTransfer = mass * G * accel * h / L;
       const brakeTransfer = mass * G * brake * h / L;
       const lateralTotal = mass * G * lat * h / avgTrack;
+      const lateralGeometric = mass * G * lat * rcHeight / avgTrack;
+      const lateralElastic = lateralTotal - lateralGeometric;
       const latFront = lateralTotal * frontRoll;
       const latRear = lateralTotal * (1 - frontRoll);
       const lltd = lateralTotal === 0 ? frontRoll * 100 : latFront / lateralTotal * 100;
@@ -1594,6 +1641,9 @@
         ["제동", fmt(base.front + brakeTransfer, 0), fmt(base.rear - brakeTransfer, 0), "-", "-"],
         ["가속", fmt(base.front - accelTransfer, 0), fmt(base.rear + accelTransfer, 0), "-", "-"],
         ["횡가속 전체, 좌측 바깥쪽 예시", "-", "-", fmt(base.weight / 2 + lateralTotal / 2, 0), fmt(base.weight / 2 - lateralTotal / 2, 0)],
+        ["횡하중이동 Total", "-", "-", fmt(lateralTotal, 0), "m·ay·CGh / track"],
+        ["Geometric Transfer", "-", "-", fmt(lateralGeometric, 0), "m·ay·RC 높이 / track"],
+        ["Elastic Transfer", "-", "-", fmt(lateralElastic, 0), "Total - Geometric"],
         ["전륜 횡하중이동", fmt(latFront, 0), "-", "바깥쪽 증가", "안쪽 감소"],
         ["후륜 횡하중이동", "-", fmt(latRear, 0), "바깥쪽 증가", "안쪽 감소"]
       ]);
@@ -1820,6 +1870,23 @@
       return { m, c };
     }
 
+    function lineFromArmPlaneAtX(innerFront, innerRear, ballJoint, xRef) {
+      const normal = cross3(vSub(innerRear, innerFront), vSub(ballJoint, innerFront));
+      if (Math.abs(normal.z) < 1e-7) {
+        return lineFromPoints(
+          { y: (innerFront.y + innerRear.y) / 2, z: (innerFront.z + innerRear.z) / 2 },
+          { y: ballJoint.y, z: ballJoint.z }
+        );
+      }
+      const rhs = normal.y * innerFront.y
+        + normal.z * innerFront.z
+        - normal.x * (xRef - innerFront.x);
+      return {
+        m: -normal.y / normal.z,
+        c: rhs / normal.z
+      };
+    }
+
     function intersect(l1, l2) {
       const y = (l2.c - l1.c) / ((l1.m - l2.m) || 1e-9);
       return { y, z: l1.m * y + l1.c };
@@ -1982,6 +2049,70 @@
       };
     }
 
+    function cross3(a, b) {
+      return {
+        x: a.y * b.z - a.z * b.y,
+        y: a.z * b.x - a.x * b.z,
+        z: a.x * b.y - a.y * b.x
+      };
+    }
+
+    function matVec(m, v) {
+      return {
+        x: m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z,
+        y: m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z,
+        z: m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z
+      };
+    }
+
+    function rotationMatrix(rx, ry, rz) {
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      const cz = Math.cos(rz), sz = Math.sin(rz);
+      return [
+        [cz * cy, cz * sy * sx - sz * cx, cz * sy * cx + sz * sx],
+        [sz * cy, sz * sy * sx + cz * cx, sz * sy * cx - cz * sx],
+        [-sy, cy * sx, cy * cx]
+      ];
+    }
+
+    function transformRigidPoint(model, pose, point) {
+      const rel = vSub(point, model.wc);
+      const rotated = matVec(rotationMatrix(pose.rx, pose.ry, pose.rz), rel);
+      return vAdd(vAdd(model.wc, { x: pose.tx, y: pose.ty, z: pose.tz }), rotated);
+    }
+
+    function wheelNormalFromPose(pose) {
+      const camber0 = rad(n("k3StaticCamber"));
+      const toe0 = rad(n("k3StaticToe"));
+      const baseNormal = {
+        x: Math.sin(toe0) * Math.cos(camber0),
+        y: Math.cos(toe0) * Math.cos(camber0),
+        z: Math.sin(camber0)
+      };
+      return matVec(rotationMatrix(pose.rx, pose.ry, pose.rz), baseNormal);
+    }
+
+    function alignmentFromPose(model, pose, transformed) {
+      const normal = wheelNormalFromPose(pose);
+      const camber = deg(Math.atan2(normal.z, Math.hypot(normal.x, normal.y)));
+      const toe = deg(Math.atan2(normal.x, normal.y));
+      const d = vSub(transformed.ubj, transformed.lbj);
+      const t = -transformed.lbj.z / (d.z || 1e-9);
+      const axisGround = vAdd(transformed.lbj, vScale(d, t));
+      const contact = { x: transformed.wc.x, y: transformed.wc.y, z: 0 };
+      return {
+        camber,
+        toe,
+        kpi: deg(Math.atan2(Math.abs(d.y), Math.abs(d.z || 1e-9))),
+        caster: deg(Math.atan2(d.x, Math.abs(d.z || 1e-9))),
+        scrub: axisGround.y - contact.y,
+        trail: contact.x - axisGround.x,
+        axisGround,
+        contact
+      };
+    }
+
     function solveLinearSystem(matrix, vector) {
       const nSize = vector.length;
       const a = matrix.map((row, i) => [...row, vector[i]]);
@@ -2006,8 +2137,10 @@
       const model = getHardpointModel();
       const shockWheel = p3("hpShockWheel");
       const links = [
-        { name: "UBJ", unit: unit3(model.wc, model.ubj) },
-        { name: "LBJ", unit: unit3(model.wc, model.lbj) },
+        { name: "UCA front", key: "ucaFront", unit: unit3(model.ubj, model.ufi) },
+        { name: "UCA rear", key: "ucaRear", unit: unit3(model.ubj, model.uri) },
+        { name: "LCA front", key: "lcaFront", unit: unit3(model.lbj, model.lfi) },
+        { name: "LCA rear", key: "lcaRear", unit: unit3(model.lbj, model.lri) },
         { name: "Tie rod", unit: unit3(model.outerTieRod, model.innerTieRod) },
         { name: "Pushrod", unit: unit3(shockWheel, model.shockBody) }
       ];
@@ -2019,33 +2152,17 @@
         link.unit.x * externalForce.x + link.unit.y * externalForce.y + link.unit.z * externalForce.z
       ));
       const solution = solveLinearSystem(ata, atb);
+      const result = links.reduce((obj, link, i) => {
+        obj[link.key || link.name.toLowerCase().replaceAll(" ", "")] = solution[i];
+        return obj;
+      }, {});
       return {
-        ubj: solution[0],
-        lbj: solution[1],
-        tieRod: solution[2],
-        pushrod: solution[3],
+        ...result,
         residual: Math.hypot(
           externalForce.x + links.reduce((sum, link, i) => sum + solution[i] * link.unit.x, 0),
           externalForce.y + links.reduce((sum, link, i) => sum + solution[i] * link.unit.y, 0),
           externalForce.z + links.reduce((sum, link, i) => sum + solution[i] * link.unit.z, 0)
         )
-      };
-    }
-
-    function dist2(a, b) {
-      return Math.hypot(a.y - b.y, a.z - b.z);
-    }
-
-    function solveProjectedBall(inner, initialBall, travel) {
-      const side = Math.sign(initialBall.y - inner.y) || 1;
-      const length = Math.max(dist2(inner, initialBall), 1);
-      const z = initialBall.z + travel;
-      const dz = z - inner.z;
-      const available = Math.max(length * length - dz * dz, 0);
-      return {
-        x: initialBall.x,
-        y: inner.y + side * Math.sqrt(available),
-        z
       };
     }
 
@@ -2065,25 +2182,19 @@
       const shockWheel = p3("hpShockWheel");
       const innerTieRod = p3("hpItr");
       const outerTieRod = p3("hpOtr");
-      const upperInner = midpoint3(ufi, uri);
-      const lowerInner = midpoint3(lfi, lri);
-      const hubOffsetY = wc.y - (ubj.y + lbj.y) / 2;
-      const shockOffset = {
-        x: shockWheel.x - wc.x,
-        y: shockWheel.y - wc.y,
-        z: shockWheel.z - wc.z
+      const staticLengths = {
+        ufiUbj: dist3(ufi, ubj),
+        uriUbj: dist3(uri, ubj),
+        lfiLbj: dist3(lfi, lbj),
+        lriLbj: dist3(lri, lbj),
+        itrOtr: dist3(innerTieRod, outerTieRod)
       };
-      const tieRodLength = dist3(innerTieRod, outerTieRod);
-      const outerTieRodOffset = {
-        x: outerTieRod.x - wc.x,
-        y: outerTieRod.y - wc.y,
-        z: outerTieRod.z - wc.z
-      };
-      const staticToeProxy = toeProxy(wc, outerTieRod);
 
       return {
-        upperInner,
-        lowerInner,
+        ufi,
+        uri,
+        lfi,
+        lri,
         ubj,
         lbj,
         wc,
@@ -2091,61 +2202,92 @@
         shockWheel,
         innerTieRod,
         outerTieRod,
-        hubOffsetY,
-        shockOffset,
-        tieRodLength,
-        outerTieRodOffset,
-        staticToeProxy
+        staticLengths
       };
     }
 
-    function toeProxy(wc, outerTieRod) {
-      return deg(Math.atan2(outerTieRod.x - wc.x, outerTieRod.y - wc.y));
-    }
-
-    function solveOuterTieRod(model, wc) {
-      const base = {
-        x: wc.x + model.outerTieRodOffset.x,
-        y: wc.y + model.outerTieRodOffset.y,
-        z: wc.z + model.outerTieRodOffset.z
-      };
-      const dx = base.x - model.innerTieRod.x;
-      const dz = base.z - model.innerTieRod.z;
-      const available = Math.max(model.tieRodLength * model.tieRodLength - dx * dx - dz * dz, 0);
-      const side = Math.sign(base.y - model.innerTieRod.y) || 1;
+    function transformedUpright(model, pose) {
       return {
-        x: base.x,
-        y: model.innerTieRod.y + side * Math.sqrt(available),
-        z: base.z
+        ubj: transformRigidPoint(model, pose, model.ubj),
+        lbj: transformRigidPoint(model, pose, model.lbj),
+        wc: transformRigidPoint(model, pose, model.wc),
+        outerTieRod: transformRigidPoint(model, pose, model.outerTieRod),
+        shockWheel: transformRigidPoint(model, pose, model.shockWheel)
       };
     }
 
-    function hardpointState(model, travel, staticShockLength) {
-      const ubj = solveProjectedBall(model.upperInner, model.ubj, travel);
-      const lbj = solveProjectedBall(model.lowerInner, model.lbj, travel);
-      const wc = {
-        x: model.wc.x,
-        y: (ubj.y + lbj.y) / 2 + model.hubOffsetY,
-        z: model.wc.z + travel
+    function poseResiduals(model, pose, travel) {
+      const p = transformedUpright(model, pose);
+      const targetZ = model.wc.z + travel;
+      return [
+        dist3(model.ufi, p.ubj) - model.staticLengths.ufiUbj,
+        dist3(model.uri, p.ubj) - model.staticLengths.uriUbj,
+        dist3(model.lfi, p.lbj) - model.staticLengths.lfiLbj,
+        dist3(model.lri, p.lbj) - model.staticLengths.lriLbj,
+        dist3(model.innerTieRod, p.outerTieRod) - model.staticLengths.itrOtr,
+        p.wc.z - targetZ
+      ];
+    }
+
+    function solveRigidUprightPose(model, travel, seed = null) {
+      let pose = seed
+        ? { ...seed, tz: travel }
+        : { tx: 0, ty: 0, tz: travel, rx: 0, ry: 0, rz: 0 };
+      const stepSizes = [0.2, 0.2, 0.2, 1e-4, 1e-4, 1e-4];
+      const damping = 1e-3;
+      const keys = ["tx", "ty", "tz", "rx", "ry", "rz"];
+
+      for (let iter = 0; iter < 34; iter += 1) {
+        const r0 = poseResiduals(model, pose, travel);
+        const err = Math.sqrt(r0.reduce((sum, r) => sum + r * r, 0) / r0.length);
+        if (err < 1e-4) break;
+
+        const j = r0.map(() => keys.map(() => 0));
+        keys.forEach((key, col) => {
+          const perturbed = { ...pose, [key]: pose[key] + stepSizes[col] };
+          const rp = poseResiduals(model, perturbed, travel);
+          r0.forEach((_, row) => {
+            j[row][col] = (rp[row] - r0[row]) / stepSizes[col];
+          });
+        });
+
+        const jtJ = keys.map((_, a) => keys.map((__, b) => (
+          j.reduce((sum, row) => sum + row[a] * row[b], 0) + (a === b ? damping : 0)
+        )));
+        const jtR = keys.map((_, a) => -j.reduce((sum, row, i) => sum + row[a] * r0[i], 0));
+        const delta = solveLinearSystem(jtJ, jtR);
+        keys.forEach((key, i) => {
+          pose[key] += Math.max(Math.min(delta[i], key.startsWith("r") ? 0.08 : 25), key.startsWith("r") ? -0.08 : -25);
+        });
+      }
+
+      const residuals = poseResiduals(model, pose, travel);
+      return {
+        pose,
+        residuals,
+        rms: Math.sqrt(residuals.reduce((sum, r) => sum + r * r, 0) / residuals.length)
       };
+    }
+
+    function hardpointState(model, travel, staticShockLength, seedPose = null) {
+      const solved = solveRigidUprightPose(model, travel, seedPose);
+      const pose = solved.pose;
+      const transformed = transformedUpright(model, pose);
+      const { ubj, lbj, wc, outerTieRod, shockWheel } = transformed;
       const tireContact = { y: wc.y, z: 0 };
-      const upperLine = lineFromPoints(model.upperInner, ubj);
-      const lowerLine = lineFromPoints(model.lowerInner, lbj);
+      const upperLine = lineFromArmPlaneAtX(model.ufi, model.uri, ubj, wc.x);
+      const lowerLine = lineFromArmPlaneAtX(model.lfi, model.lri, lbj, wc.x);
       const instantCenter = intersect(upperLine, lowerLine);
       const rcLine = lineFromPoints(instantCenter, tireContact);
-      const shockWheel = {
-        x: wc.x + model.shockOffset.x,
-        y: wc.y + model.shockOffset.y,
-        z: wc.z + model.shockOffset.z
-      };
-      const outerTieRod = solveOuterTieRod(model, wc);
       const length = shockLength(model.shockBody, shockWheel);
-      const camber = deg(Math.atan2(ubj.y - lbj.y, ubj.z - lbj.z));
-      const toeChange = toeProxy(wc, outerTieRod) - model.staticToeProxy;
+      const align = alignmentFromPose(model, pose, transformed);
+      const staticAlign = alignmentFromPose(model, { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0 }, transformedUpright(model, { tx: 0, ty: 0, tz: 0, rx: 0, ry: 0, rz: 0 }));
+      const toeChange = align.toe - staticAlign.toe;
 
       return {
         travel,
-        camber,
+        camber: align.camber,
+        toe: align.toe,
         rollCenter: rcLine.c,
         trackChange: wc.y - model.wc.y,
         toeChange,
@@ -2155,34 +2297,57 @@
         lbj,
         wc,
         outerTieRod,
-        instantCenter
+        instantCenter,
+        pose,
+        solverRms: solved.rms,
+        kpi: align.kpi,
+        caster: align.caster,
+        scrub: align.scrub,
+        trail: align.trail,
+        axisGround: align.axisGround,
+        contact: align.contact
       };
     }
 
-    function hardpointSweep() {
+    function rigidUprightSweep(minTravel, maxTravel, stepValue) {
       const model = getHardpointModel();
-      const minTravel = Math.min(n("hpTravelMin"), n("hpTravelMax"));
-      const maxTravel = Math.max(n("hpTravelMin"), n("hpTravelMax"));
-      const step = Math.max(Math.abs(n("hpTravelStep")), 1);
+      const low = Math.min(minTravel, maxTravel);
+      const high = Math.max(minTravel, maxTravel);
+      const step = Math.max(Math.abs(stepValue), 1);
       const staticShockLength = shockLength(model.shockBody, model.shockWheel);
-      const rows = [];
+      const travels = [];
 
-      for (let travel = minTravel; travel <= maxTravel + 0.0001; travel += step) {
-        rows.push(hardpointState(model, travel, staticShockLength));
+      for (let travel = low; travel <= high + 0.0001; travel += step) {
+        travels.push(Number(travel.toFixed(6)));
       }
-      if (!rows.some((row) => Math.abs(row.travel) < 0.001)) {
-        rows.push(hardpointState(model, 0, staticShockLength));
-        rows.sort((a, b) => a.travel - b.travel);
+      if (!travels.some((travel) => Math.abs(travel) < 0.001)) {
+        travels.push(0);
       }
+      travels.sort((a, b) => a - b);
 
-      const finiteStep = step || 10;
-      const plus = hardpointState(model, finiteStep, staticShockLength);
-      const minus = hardpointState(model, -finiteStep, staticShockLength);
-      const staticRow = hardpointState(model, 0, staticShockLength);
+      let seedPose = null;
+      const rows = travels.map((travel) => {
+        const row = hardpointState(model, travel, staticShockLength, seedPose);
+        seedPose = row.pose;
+        return row;
+      });
+
+      const staticRow = rows.find((row) => Math.abs(row.travel) < 0.001)
+        || hardpointState(model, 0, staticShockLength, seedPose);
+      const finiteStep = Math.max(step, 5);
+      const plus = hardpointState(model, finiteStep, staticShockLength, staticRow.pose);
       staticRow.motionRatio = Math.abs((plus.shockLength - staticShockLength) / finiteStep);
 
       return rows.map((row) => Math.abs(row.travel) < 0.001 ? staticRow : row)
         .map((row) => ({ ...row, motionRatio: row.motionRatio || staticRow.motionRatio }));
+    }
+
+    function hardpointSweep() {
+      return rigidUprightSweep(
+        n("hpTravelMin"),
+        n("hpTravelMax"),
+        n("hpTravelStep")
+      );
     }
 
     function updateHardpointSuspension() {
@@ -2213,6 +2378,13 @@
       const trackMax = Math.max(...trackValues);
       const trackPer25 = (bumpRow.trackChange - staticRow.trackChange) / Math.max(Math.abs(bumpRow.travel - staticRow.travel), 1) * 25;
       const trackGrade = Math.abs(trackPer25) > 8 ? "과도함" : Math.abs(trackPer25) > 3 ? "적정" : "작음";
+      const maxSolverRms = Math.max(...rows.map((row) => row.solverRms).filter(Number.isFinite));
+      const solverClass = maxSolverRms < 0.5 ? "good" : maxSolverRms < 2 ? "warn" : "bad";
+      const solverText = maxSolverRms < 0.5
+        ? "링크 길이 구속을 안정적으로 만족합니다."
+        : maxSolverRms < 2
+          ? "일부 트래블에서 구속 오차가 있습니다. 하드포인트 간 길이와 트래블 범위를 확인하세요."
+          : "구속 오차가 큽니다. 입력 하드포인트 또는 요구 트래블이 물리적으로 불가능할 수 있습니다.";
 
       document.getElementById("hpCamberGain").textContent = fmt(camberGain, 2, "도/m");
       document.getElementById("hpRcRange").textContent = `${fmt(rcMin, 0)} ~ ${fmt(rcMax, 0)} mm`;
@@ -2221,6 +2393,9 @@
       document.getElementById("hpTrackRange").textContent = `${fmt(trackPer25, 1, " mm/25mm")} ${trackGrade}`;
       document.getElementById("hpWheelRate").textContent = fmt(staticRow.wheelRate / 1000, 2, " N/mm");
       document.getElementById("hpRideRate").textContent = fmt(staticRow.rideRate / 1000, 2, " N/mm");
+      const hpSolverStatus = document.getElementById("hpSolverStatus");
+      hpSolverStatus.className = `status ${solverClass}`;
+      hpSolverStatus.textContent = `Rigid upright 3D solver: 최대 RMS ${fmt(maxSolverRms, 3, " mm")} - ${solverText}`;
 
       setRows("hpSweepTable", rows.map((row) => [
         fmt(row.travel, 0, " mm"),
@@ -2230,7 +2405,8 @@
         fmt(row.toeChange, 2, "도"),
         fmt(row.motionRatio, 3),
         fmt(row.wheelRate / 1000, 2),
-        fmt(row.rideRate / 1000, 2)
+        fmt(row.rideRate / 1000, 2),
+        fmt(row.solverRms, 3, " mm")
       ]));
 
       drawHardpointCurves(rows);
@@ -2254,17 +2430,35 @@
       const dist = totalRoll > 0 ? frontRoll / totalRoll * 100 : 50;
       const totalRollUsed = n("totalRollStiffnessOverride") > 0 ? n("totalRollStiffnessOverride") : totalRoll;
       const mass = Math.max(n("mass"), 0);
-      const cgToRcM = Math.max(n("cgHeight") / 1000 - n("rollCenterHeight"), 0);
+      const cgXM = n("cgX") / 1000;
+      const wheelbaseM = Math.max(n("wheelbase") / 1000, 0.001);
+      const frontRcM = n("rollCenterHeight");
+      const rearRcM = n("rearRollCenterHeight");
+      const rollAxisAtCg = frontRcM + (rearRcM - frontRcM) * Math.min(Math.max(cgXM / wheelbaseM, 0), 1);
+      const rollAxisSlope = deg(Math.atan2(rearRcM - frontRcM, wheelbaseM));
+      const cgToRcM = Math.max(n("cgHeight") / 1000 - rollAxisAtCg, 0);
       const rollGradient = totalRollUsed > 0 ? mass * G * cgToRcM / totalRollUsed * 180 / Math.PI : 0;
+      const frontSprung = Math.max(n("rfFrontCornerWeight") / G - n("rfFrontUnsprung"), 0.1);
+      const rearSprung = Math.max(n("rfRearCornerWeight") / G - n("rfRearUnsprung"), 0.1);
+      const a = cgXM;
+      const b = Math.max(wheelbaseM - cgXM, 0);
+      const pitchStiffness = 2 * frontWheelRate * a * a + 2 * rearWheelRate * b * b;
+      const pitchFreq = n("pitchInertiaIy") > 0 ? 1 / (2 * Math.PI) * Math.sqrt(pitchStiffness / n("pitchInertiaIy")) : 0;
       return {
         frontFreq: rideFrequency(n("rfFrontCornerWeight"), frontWheelRate, n("rfFrontUnsprung")),
         rearFreq: rideFrequency(n("rfRearCornerWeight"), rearWheelRate, n("rfRearUnsprung")),
+        pitchFreq,
         frontRoll,
         rearRoll,
         totalRoll,
         dist,
         totalRollUsed,
-        rollGradient
+        rollGradient,
+        rollAxisAtCg,
+        rollAxisSlope,
+        pitchStiffness,
+        frontSprung,
+        rearSprung
       };
     }
 
@@ -2274,6 +2468,7 @@
       const lltdEval = evaluateLltd(result.dist);
       document.getElementById("frontRideFreq").textContent = fmt(result.frontFreq, 2, " Hz");
       document.getElementById("rearRideFreq").textContent = fmt(result.rearFreq, 2, " Hz");
+      document.getElementById("pitchFreq").textContent = fmt(result.pitchFreq, 2, " Hz");
       document.getElementById("rollStiffDist").textContent = fmt(result.dist, 1, "%");
       document.getElementById("rollGradient").textContent = fmt(result.rollGradient, 2, " deg/g");
       document.getElementById("rollDistBias").textContent = `${lltdEval.label} 성향, 하중이동 탭 LLTD 입력에 반영`;
@@ -2282,11 +2477,14 @@
       setRows("springRollTable", [
         ["전륜 라이드 주파수", fmt(result.frontFreq, 3, " Hz"), "Formula 스프링 세팅 비교의 핵심 지표"],
         ["후륜 라이드 주파수", fmt(result.rearFreq, 3, " Hz"), "후륜이 약간 높으면 응답성은 좋아지지만 트랙션 변화를 확인해야 함"],
+        ["Pitch frequency", fmt(result.pitchFreq, 3, " Hz"), "Iy와 전후 휠레이트/CG 위치 기반 1차 피치 모드"],
         ["전륜 휠레이트", fmt(n("rfFrontWheelRate"), 2, " N/mm"), "Formula 스프링 세팅 기준 입력값"],
         ["후륜 휠레이트", fmt(n("rfRearWheelRate"), 2, " N/mm"), "Formula 스프링 세팅 기준 입력값"],
         ["전륜 롤강성", fmt(result.frontRoll, 1, " N·m/rad"), "휠레이트와 전륜 안티롤바 합산"],
         ["후륜 롤강성", fmt(result.rearRoll, 1, " N·m/rad"), "휠레이트와 후륜 안티롤바 합산"],
         ["롤강성 분배", fmt(result.dist, 1, "% front"), "기존 하중이동 탭의 LLTD 입력값으로 자동 연결"],
+        ["Roll axis @ CG", fmt(result.rollAxisAtCg, 3, " m"), "전/후 롤센터를 잇는 축에서 CG X 위치의 높이"],
+        ["Roll axis angle", fmt(result.rollAxisSlope, 2, "도"), "후륜 RC가 높으면 양수"],
         ["총 롤강성", fmt(result.totalRollUsed, 1, " N·m/rad"), n("totalRollStiffnessOverride") > 0 ? "직접 입력값 사용" : "전후 롤강성 합 사용"],
         ["롤 그래디언트", fmt(result.rollGradient, 3, " deg/g"), "값이 작을수록 같은 횡가속도에서 롤이 작음"]
       ]);
@@ -2299,8 +2497,14 @@
       const pushAngle = Math.max(Math.abs(n("pfPushrodAngle")), 1);
       const damperAngle = Math.max(Math.abs(n("pfDamperAngle")), 0);
       const springRate = Math.max(n("pfSpringRate"), 0.001) * 1000;
+      const bellcrankPivot = { x: n("bcPivotX"), y: n("bcPivotY"), z: n("bcPivotZ") };
+      const bellcrankPush = { x: n("bcPushX"), y: n("bcPushY"), z: n("bcPushZ") };
+      const bellcrankDamper = { x: n("bcDamperX"), y: n("bcDamperY"), z: n("bcDamperZ") };
+      const pushArm = dist3(bellcrankPivot, bellcrankPush);
+      const damperArm = dist3(bellcrankPivot, bellcrankDamper);
+      const bellcrankRatio = pushArm / Math.max(damperArm, 1e-9);
       const pushrodForce = wheelLoad / Math.max(Math.sin(rad(pushAngle)) * mr, 0.001);
-      const damperForce = pushrodForce * Math.max(Math.cos(rad(damperAngle)), 0.001);
+      const damperForce = pushrodForce * bellcrankRatio * Math.max(Math.cos(rad(damperAngle)), 0.001);
       const springCompression = damperForce / springRate;
 
       const latLoad = wheelLoad * Math.max(n("slCorneringG"), 0);
@@ -2311,8 +2515,10 @@
         y: latLoad * Math.max(n("slSafetyFactor"), 1),
         z: -wheelLoad * Math.max(n("slSafetyFactor"), 1)
       });
-      const ubjLoad = Math.abs(linkLoads.ubj);
-      const lbjLoad = Math.abs(linkLoads.lbj);
+      const ucaFrontLoad = Math.abs(linkLoads.ucaFront);
+      const ucaRearLoad = Math.abs(linkLoads.ucaRear);
+      const lcaFrontLoad = Math.abs(linkLoads.lcaFront);
+      const lcaRearLoad = Math.abs(linkLoads.lcaRear);
       const tieRodLoad = Math.abs(linkLoads.tieRod);
       const pushrodLoad = Math.max(Math.abs(linkLoads.pushrod), pushrodForce * Math.max(n("slSafetyFactor"), 1));
 
@@ -2327,6 +2533,7 @@
 
       document.getElementById("pushrodForce").textContent = fmt(pushrodForce, 0, " N");
       document.getElementById("damperForce").textContent = fmt(damperForce, 0, " N");
+      document.getElementById("bellcrankRatio").textContent = fmt(bellcrankRatio, 3);
       document.getElementById("springCompression").textContent = fmt(springCompression * 1000, 1, " mm");
       document.getElementById("actualBrakeBias").textContent = fmt(actualFront * 100, 1, "% front");
       document.getElementById("brakeLock").textContent = lockText;
@@ -2334,10 +2541,13 @@
 
       setRows("loadsTable", [
         ["Pushrod force", fmt(pushrodForce, 1, " N"), "Wheel load / (sin(pushrod angle) × motion ratio)"],
-        ["Damper force", fmt(damperForce, 1, " N"), "푸시로드-댐퍼 각도 반영"],
+        ["Bellcrank ratio", fmt(bellcrankRatio, 3), "피벗-푸시로드점 거리 / 피벗-댐퍼점 거리"],
+        ["Damper force", fmt(damperForce, 1, " N"), "푸시로드 하중 × bellcrank ratio × 각도 보정"],
         ["Spring compression", fmt(springCompression * 1000, 2, " mm"), "Damper force / spring rate"],
-        ["Upper ball joint load", fmt(ubjLoad, 1, " N"), "하드포인트 좌표 기반 최소제곱 축력"],
-        ["Lower ball joint load", fmt(lbjLoad, 1, " N"), "하드포인트 좌표 기반 최소제곱 축력"],
+        ["UCA front link load", fmt(ucaFrontLoad, 1, " N"), "UBJ-UFI 링크 축력 최소노름 해"],
+        ["UCA rear link load", fmt(ucaRearLoad, 1, " N"), "UBJ-URI 링크 축력 최소노름 해"],
+        ["LCA front link load", fmt(lcaFrontLoad, 1, " N"), "LBJ-LFI 링크 축력 최소노름 해"],
+        ["LCA rear link load", fmt(lcaRearLoad, 1, " N"), "LBJ-LRI 링크 축력 최소노름 해"],
         ["Tie rod load", fmt(tieRodLoad, 1, " N"), "Inner/Outer tie rod 좌표 기반 축력"],
         ["Pushrod design load", fmt(pushrodLoad, 1, " N"), "좌표 기반 축력과 모션비 기반 하중 중 큰 값"],
         ["좌표 solver 잔차", fmt(linkLoads.residual, 1, " N"), "값이 크면 링크 방향만으로 외력을 충분히 지지하지 못하는 형상"],
@@ -2510,13 +2720,37 @@
       return { m, c };
     }
 
+    function fitLineXZ(points) {
+      const count = points.length || 1;
+      const xMean = points.reduce((sum, p) => sum + p.x, 0) / count;
+      const zMean = points.reduce((sum, p) => sum + p.z, 0) / count;
+      const denom = points.reduce((sum, p) => sum + (p.x - xMean) * (p.x - xMean), 0);
+      if (Math.abs(denom) < 1e-9) return { m: 1e9, c: -1e9 * xMean + zMean };
+      const m = points.reduce((sum, p) => sum + (p.x - xMean) * (p.z - zMean), 0) / denom;
+      return { m, c: zMean - m * xMean };
+    }
+
     function intersectXZ(l1, l2) {
       const x = (l2.c - l1.c) / ((l1.m - l2.m) || 1e-9);
       return { x, z: l1.m * x + l1.c };
     }
 
-    function sideViewIc(upperIn, upperOut, lowerIn, lowerOut) {
-      return intersectXZ(lineFromXZ(upperIn, upperOut), lineFromXZ(lowerIn, lowerOut));
+    function antiPoint(prefix, point) {
+      return pointXZ(`anti${prefix}${point}x`, `anti${prefix}${point}z`);
+    }
+
+    function sideViewAxle(prefix) {
+      const upperPoints = [antiPoint(prefix, "UFI"), antiPoint(prefix, "URI"), antiPoint(prefix, "UBJ")];
+      const lowerPoints = [antiPoint(prefix, "LFI"), antiPoint(prefix, "LRI"), antiPoint(prefix, "LBJ")];
+      const upperLine = fitLineXZ(upperPoints);
+      const lowerLine = fitLineXZ(lowerPoints);
+      return {
+        upperPoints,
+        lowerPoints,
+        upperLine,
+        lowerLine,
+        ic: intersectXZ(upperLine, lowerLine)
+      };
     }
 
     function forceLineSlope(contact, ic) {
@@ -2537,18 +2771,10 @@
       const h = Math.max(n("cgHeight"), 1);
       const frontContact = { x: 0, z: 0 };
       const rearContact = { x: L, z: 0 };
-      const frontIc = sideViewIc(
-        pointXZ("antiFUInX", "antiFUInZ"),
-        pointXZ("antiFUOutX", "antiFUOutZ"),
-        pointXZ("antiFLInX", "antiFLInZ"),
-        pointXZ("antiFLOutX", "antiFLOutZ")
-      );
-      const rearIc = sideViewIc(
-        pointXZ("antiRUInX", "antiRUInZ"),
-        pointXZ("antiRUOutX", "antiRUOutZ"),
-        pointXZ("antiRLInX", "antiRLInZ"),
-        pointXZ("antiRLOutX", "antiRLOutZ")
-      );
+      const frontSide = sideViewAxle("F");
+      const rearSide = sideViewAxle("R");
+      const frontIc = frontSide.ic;
+      const rearIc = rearSide.ic;
       const frontBrakeShare = Math.min(Math.max(n("antiFrontBrake") / 100, 0), 1);
       const rearBrakeShare = 1 - frontBrakeShare;
       const rearDriveShare = Math.min(Math.max(n("antiRearDrive") / 100, 0), 1);
@@ -2575,12 +2801,34 @@
       setRows("antiTable", [
         ["Front Side IC", `${fmt(frontIc.x, 1)} / ${fmt(frontIc.z, 1)} mm`, "전륜 어퍼/로어 측면도 연장선 교점"],
         ["Rear Side IC", `${fmt(rearIc.x, 1)} / ${fmt(rearIc.z, 1)} mm`, "후륜 어퍼/로어 측면도 연장선 교점"],
+        ["Front upper side line", `z = ${fmt(frontSide.upperLine.m, 4)}x + ${fmt(frontSide.upperLine.c, 1)}`, "UFI/URI/UBJ X-Z 투영 최소제곱선"],
+        ["Front lower side line", `z = ${fmt(frontSide.lowerLine.m, 4)}x + ${fmt(frontSide.lowerLine.c, 1)}`, "LFI/LRI/LBJ X-Z 투영 최소제곱선"],
+        ["Rear upper side line", `z = ${fmt(rearSide.upperLine.m, 4)}x + ${fmt(rearSide.upperLine.c, 1)}`, "UFI/URI/UBJ X-Z 투영 최소제곱선"],
+        ["Rear lower side line", `z = ${fmt(rearSide.lowerLine.m, 4)}x + ${fmt(rearSide.lowerLine.c, 1)}`, "LFI/LRI/LBJ X-Z 투영 최소제곱선"],
         ["Anti-Dive", fmt(antiDive, 1, "%"), "제동 중 전륜 다이브 억제 1차 추정"],
         ["Anti-Lift", fmt(antiLift, 1, "%"), "제동 중 후륜 리프트 억제 1차 추정"],
         ["Anti-Squat", fmt(antiSquat, 1, "%"), "가속 중 후륜 스쿼트 억제 1차 추정"]
       ]);
 
-      drawAntiGeometry({ L, frontContact, rearContact, frontIc, rearIc });
+      drawAntiGeometry({ L, frontContact, rearContact, frontIc, rearIc, frontSide, rearSide });
+    }
+
+    function syncAntiFromHardpoints() {
+      const mappings = [
+        ["antiFUFIx", "hpUFIx"], ["antiFUFIz", "hpUFIz"],
+        ["antiFURIx", "hpURIx"], ["antiFURIz", "hpURIz"],
+        ["antiFUBJx", "hpUBJx"], ["antiFUBJz", "hpUBJz"],
+        ["antiFLFIx", "hpLFIx"], ["antiFLFIz", "hpLFIz"],
+        ["antiFLRIx", "hpLRIx"], ["antiFLRIz", "hpLRIz"],
+        ["antiFLBJx", "hpLBJx"], ["antiFLBJz", "hpLBJz"]
+      ];
+      mappings.forEach(([antiKey, hpKey]) => {
+        const antiInput = document.querySelector(`[data-key="${antiKey}"]`);
+        const hpInput = document.querySelector(`[data-key="${hpKey}"]`);
+        if (antiInput && hpInput) antiInput.value = hpInput.value;
+      });
+      updateAll();
+      saveState();
     }
 
     function drawAntiGeometry(data) {
@@ -2591,14 +2839,8 @@
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "#f8fafc";
       ctx.fillRect(0, 0, w, h);
-      const fPts = [
-        pointXZ("antiFUInX", "antiFUInZ"), pointXZ("antiFUOutX", "antiFUOutZ"),
-        pointXZ("antiFLInX", "antiFLInZ"), pointXZ("antiFLOutX", "antiFLOutZ")
-      ];
-      const rPts = [
-        pointXZ("antiRUInX", "antiRUInZ"), pointXZ("antiRUOutX", "antiRUOutZ"),
-        pointXZ("antiRLInX", "antiRLInZ"), pointXZ("antiRLOutX", "antiRLOutZ")
-      ];
+      const fPts = [...data.frontSide.upperPoints, ...data.frontSide.lowerPoints];
+      const rPts = [...data.rearSide.upperPoints, ...data.rearSide.lowerPoints];
       const all = [...fPts, ...rPts, data.frontContact, data.rearContact, data.frontIc, data.rearIc].filter((p) => Number.isFinite(p.x) && Number.isFinite(p.z));
       const minX = Math.min(0, ...all.map((p) => p.x)) - 120;
       const maxX = Math.max(data.L, ...all.map((p) => p.x)) + 120;
@@ -2627,12 +2869,16 @@
 
       line({ x: minX, z: 0 }, { x: maxX, z: 0 }, "#cbd5e1", 2);
       line(data.frontContact, data.rearContact, "#94a3b8", 2);
-      line(fPts[0], fPts[1], "#0f766e");
-      line(fPts[2], fPts[3], "#0f766e");
-      line(rPts[0], rPts[1], "#2563eb");
-      line(rPts[2], rPts[3], "#2563eb");
+      line({ x: minX, z: data.frontSide.upperLine.m * minX + data.frontSide.upperLine.c }, { x: maxX, z: data.frontSide.upperLine.m * maxX + data.frontSide.upperLine.c }, "#0f766e");
+      line({ x: minX, z: data.frontSide.lowerLine.m * minX + data.frontSide.lowerLine.c }, { x: maxX, z: data.frontSide.lowerLine.m * maxX + data.frontSide.lowerLine.c }, "#0f766e");
+      line({ x: minX, z: data.rearSide.upperLine.m * minX + data.rearSide.upperLine.c }, { x: maxX, z: data.rearSide.upperLine.m * maxX + data.rearSide.upperLine.c }, "#2563eb");
+      line({ x: minX, z: data.rearSide.lowerLine.m * minX + data.rearSide.lowerLine.c }, { x: maxX, z: data.rearSide.lowerLine.m * maxX + data.rearSide.lowerLine.c }, "#2563eb");
       line(data.frontContact, data.frontIc, "#b45309", 2);
       line(data.rearContact, data.rearIc, "#b45309", 2);
+      data.frontSide.upperPoints.forEach((p, i) => dot(p, ["F UFI", "F URI", "F UBJ"][i], "#0f766e"));
+      data.frontSide.lowerPoints.forEach((p, i) => dot(p, ["F LFI", "F LRI", "F LBJ"][i], "#0f766e"));
+      data.rearSide.upperPoints.forEach((p, i) => dot(p, ["R UFI", "R URI", "R UBJ"][i], "#2563eb"));
+      data.rearSide.lowerPoints.forEach((p, i) => dot(p, ["R LFI", "R LRI", "R LBJ"][i], "#2563eb"));
       dot(data.frontContact, "전륜 접지", "#64748b");
       dot(data.rearContact, "후륜 접지", "#64748b");
       dot(data.frontIc, "Front IC", "#b45309");
@@ -2652,46 +2898,15 @@
     }
 
     function k3AlignmentAt(travel = 0) {
-      const ubj = vAdd(p3("k3Ubj"), { x: 0, y: 0, z: travel });
-      const lbj = vAdd(p3("k3Lbj"), { x: 0, y: 0, z: travel });
-      const wc = vAdd(p3("k3Wc"), { x: 0, y: 0, z: travel });
-      const d = vSub(ubj, lbj);
-      const t = -lbj.z / (d.z || 1e-9);
-      const axisGround = vAdd(lbj, vScale(d, t));
-      const contact = { x: wc.x, y: wc.y, z: 0 };
-      const kpi = deg(Math.atan2(Math.abs(d.y), Math.abs(d.z || 1e-9)));
-      const caster = deg(Math.atan2(d.x, Math.abs(d.z || 1e-9)));
-      const scrub = axisGround.y - contact.y;
-      const trail = contact.x - axisGround.x;
-      return {
-        travel,
-        ubj,
-        lbj,
-        wc,
-        axisGround,
-        contact,
-        kpi,
-        caster,
-        scrub,
-        trail,
-        camber: n("k3StaticCamber"),
-        toe: n("k3StaticToe")
-      };
+      return rigidUprightSweep(travel, travel, Math.max(n("k3TravelStep"), 1))[0];
     }
 
     function k3Sweep() {
-      const minTravel = Math.min(n("k3TravelMin"), n("k3TravelMax"));
-      const maxTravel = Math.max(n("k3TravelMin"), n("k3TravelMax"));
-      const step = Math.max(Math.abs(n("k3TravelStep")), 1);
-      const rows = [];
-      for (let travel = minTravel; travel <= maxTravel + 0.0001; travel += step) {
-        rows.push(k3AlignmentAt(travel));
-      }
-      if (!rows.some((row) => Math.abs(row.travel) < 0.001)) {
-        rows.push(k3AlignmentAt(0));
-        rows.sort((a, b) => a.travel - b.travel);
-      }
-      return rows;
+      return rigidUprightSweep(
+        n("k3TravelMin"),
+        n("k3TravelMax"),
+        n("k3TravelStep")
+      );
     }
 
     function scrubGrade(scrub) {
@@ -2702,23 +2917,48 @@
       return { label: "매우 과도함", className: "bad" };
     }
 
+    function syncK3InputsFromHardpoints() {
+      const pairs = [
+        ["k3Ubj", p3("hpUBJ")],
+        ["k3Lbj", p3("hpLBJ")],
+        ["k3Wc", p3("hpWC")]
+      ];
+      pairs.forEach(([prefix, point]) => {
+        ["x", "y", "z"].forEach((axis) => {
+          const input = document.getElementById(`${prefix}${axis}`);
+          if (!input) return;
+          input.value = point[axis].toFixed(1);
+          input.readOnly = true;
+          input.title = "하드포인트 현가 탭 좌표가 자동 반영됩니다.";
+        });
+      });
+    }
+
     function updateKinematics3d() {
+      syncK3InputsFromHardpoints();
       const state = k3AlignmentAt(0);
       const rows = k3Sweep();
       const grade = scrubGrade(state.scrub);
+      const maxSolverRms = Math.max(...rows.map((row) => row.solverRms).filter(Number.isFinite));
+      const solverClass = maxSolverRms < 0.5 ? "good" : maxSolverRms < 2 ? "warn" : "bad";
       document.getElementById("k3Kpi").textContent = fmt(state.kpi, 2, "도");
       document.getElementById("k3Caster").textContent = fmt(state.caster, 2, "도");
       document.getElementById("k3Scrub").textContent = fmt(state.scrub, 1, " mm");
       document.getElementById("k3Trail").textContent = fmt(state.trail, 1, " mm");
       document.getElementById("k3ScrubGrade").textContent = grade.label;
       document.getElementById("k3ScrubMetric").className = `metric ${grade.className}`;
+      const k3SolverStatus = document.getElementById("k3SolverStatus");
+      k3SolverStatus.className = `status ${solverClass}`;
+      k3SolverStatus.textContent = `하드포인트 현가 탭의 좌표와 rigid upright solver 결과 사용 중: 최대 RMS ${fmt(maxSolverRms, 3, " mm")}`;
 
       setRows("k3Table", [
         ["KPI / SAI", fmt(state.kpi, 2, "도"), "정면 Y-Z에서 조향축과 수직선 사이 각도"],
         ["Caster", fmt(state.caster, 2, "도"), "측면 X-Z에서 조향축 기울기, +X는 후륜 방향"],
         ["Scrub Radius", fmt(state.scrub, 1, " mm"), "조향축 지면점 Y - 타이어 접지점 Y"],
         ["Mechanical Trail", fmt(state.trail, 1, " mm"), "타이어 접지점 X - 조향축 지면점 X"],
-        ["조향축 지면점 X/Y", `${fmt(state.axisGround.x, 1)} / ${fmt(state.axisGround.y, 1)} mm`, "킹핀축이 지면과 만나는 위치"]
+        ["조향축 지면점 X/Y", `${fmt(state.axisGround.x, 1)} / ${fmt(state.axisGround.y, 1)} mm`, "킹핀축이 지면과 만나는 위치"],
+        ["Solver RMS", fmt(state.solverRms, 4, " mm"), "0에 가까울수록 링크 길이 구속 만족"],
+        ["좌표 출처", "하드포인트 현가 탭", "UBJ/LBJ/WC 입력칸은 현재 solver 입력값을 읽기 전용으로 표시"]
       ]);
 
       setRows("k3SweepTable", rows.map((row) => [
@@ -2895,6 +3135,11 @@
       saveState();
     });
 
+    document.getElementById("cgPartRows").addEventListener("change", () => {
+      updateAll();
+      saveState();
+    });
+
     document.getElementById("cgPartRows").addEventListener("click", (event) => {
       if (!event.target.classList.contains("cg-remove")) return;
       const rows = document.querySelectorAll("#cgPartRows tr");
@@ -2911,6 +3156,7 @@
     });
 
     document.getElementById("applyCgBtn").addEventListener("click", applyCgToVehicle);
+    document.getElementById("syncAntiFromHpBtn").addEventListener("click", syncAntiFromHardpoints);
 
     document.querySelectorAll("[data-key]").forEach((el) => {
       el.addEventListener("input", () => {
